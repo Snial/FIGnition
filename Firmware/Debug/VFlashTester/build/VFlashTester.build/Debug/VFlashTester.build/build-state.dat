@@ -1,0 +1,84 @@
+TVFlashTester
+v7
+r0
+t331139669.917178
+cCheck dependencies
+cCompileC build/VFlashTester.build/Debug/VFlashTester.build/Objects-normal/i386/main.o /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/main.c normal i386 c com.apple.compilers.gcc.4_2
+cLd /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug/VFlashTester normal i386
+
+N/Developer/SDKs/MacOSX10.6.sdk
+c000000004C5342BA00000000000000EE
+t1280524986
+s238
+
+N/Developer/SDKs/MacOSX10.6.sdk/usr/include/stdio.h
+c000000004AC59C820000000000004174
+t1254464642
+s16756
+
+N/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/CoreDefs.h
+c000000004E0451FA0000000000000BCE
+t1308905978
+s3022
+
+N/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/FigVFlash.c
+c000000004E0C92CB00000000000035EE
+t1309446859
+s13806
+i"FigVFlash.h"
+
+N/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/FigVFlash.h
+c000000004E09B498000000000000069A
+t1309258904
+s1690
+i"CoreDefs.h"
+
+N/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug/VFlashTester
+t1309446868
+s18240
+
+N/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/Objects-normal/i386/VFlashTester.LinkFileList
+c000000004E0A037D0000000000000095
+t1309279101
+s149
+
+N/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/Objects-normal/i386/main.o
+t1309446868
+s20692
+
+N/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/main.c
+c000000004E0C929D000000000000192C
+t1309446813
+s6444
+i<stdio.h>
+i"../CoreDefs.h"
+i"../FigVFlash.h"
+i"../FigVFlash.c"
+
+CCheck dependencies
+r0
+lSLF07#2@18"Check dependencies331139669#331139669#0(0"0(0#1#0"2499547680#0"0#
+
+CCompileC build/VFlashTester.build/Debug/VFlashTester.build/Objects-normal/i386/main.o /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/main.c normal i386 c com.apple.compilers.gcc.4_2
+s331139668.273404
+e331139668.471154
+r1
+xCompileC
+xbuild/VFlashTester.build/Debug/VFlashTester.build/Objects-normal/i386/main.o
+x/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/main.c
+xnormal
+xi386
+xc
+xcom.apple.compilers.gcc.4_2
+lSLF07#2@86"Compile /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/main.c331139668#331139668#0(0"0(0#0#78"/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/main.c2499547680#1717"    cd /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester    setenv LANG en_US.US-ASCII    /Developer/usr/bin/gcc-4.2 -x c -arch i386 -fmessage-length=0 -pipe -std=gnu99 -Wno-trigraphs -fpascal-strings -fasm-blocks -O0 -Wreturn-type -Wunused-variable -isysroot /Developer/SDKs/MacOSX10.6.sdk -mfix-and-continue -mmacosx-version-min=10.6 -gdwarf-2 -iquote /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/VFlashTester-generated-files.hmap -I/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/VFlashTester-own-target-headers.hmap -I/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/VFlashTester-all-target-headers.hmap -iquote /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/VFlashTester-project-headers.hmap -F/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug -I/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug/include -I/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/DerivedSources/i386 -I/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/DerivedSources -c /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/main.c -o /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/Objects-normal/i386/main.o0#
+
+CLd /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug/VFlashTester normal i386
+s331139668.471358
+e331139668.528934
+r1
+xLd
+x/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug/VFlashTester
+xnormal
+xi386
+lSLF07#2@101"Link /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug/VFlashTester331139668#331139668#0(0"0(0#0#0"2499547680#679"    cd /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester    setenv MACOSX_DEPLOYMENT_TARGET 10.6    /Developer/usr/bin/gcc-4.2 -arch i386 -isysroot /Developer/SDKs/MacOSX10.6.sdk -L/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug -F/Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug -filelist /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/VFlashTester.build/Debug/VFlashTester.build/Objects-normal/i386/VFlashTester.LinkFileList -mmacosx-version-min=10.6 -o /Users/user/DevProjects/nichemachines/FigLet/Firmware/Test/VFlashTester/build/Debug/VFlashTester0#
+
