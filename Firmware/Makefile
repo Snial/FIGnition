@@ -67,11 +67,9 @@ PROGRAMMER = -c stk500v2 -P avrdoper
 SRCDIR = src/
 CSRCS := $(wildcard $(SRCDIR)*.c)
 ASMSRCS := $(wildcard $(SRCDIR)*.s)
-ASM2SRCS := $(wildcard $(SRCDIR)*.S)
 OBJDIR = obj/
 ObjectsFromSRC := $(subst $(SRCDIR),$(OBJDIR), $(patsubst %.c,%.o,$(CSRCS)) \
-				$(patsubst %.s,%.o,$(ASMSRCS)) \
-				$(patsubst %.S,%.o,$(ASM2SRCS)) )
+				$(patsubst %.s,%.o,$(ASMSRCS)) )
 
 #FigForth.o needs to come last for linking purposes.
 ObjectsFromObj := $(patsubst $(OBJDIR)FigForth.o,,$(wildcard $(OBJDIR)*.o)) $(OBJDIR)FigForth.o
@@ -142,9 +140,6 @@ $(OBJDIR)%.o : $(SRCDIR)%.c
 
 $(OBJDIR)%.o : $(SRCDIR)%.s
 	$(COMPILE) -DRamBase=0x8000 -x assembler-with-cpp -c $< -o $@
-	
-$(OBJDIR)%.o : $(SRCDIR)%.S
-	$(COMPILE) -DRamBase=0x8000 -x assembler-with-cpp -c $< -o $@
 
 # "-x assembler-with-cpp" should not be necessary since this is the default
 # file type for the .S (with capital S) extension. However, upper case
@@ -168,7 +163,7 @@ load: all
 	bootloadHID main.hex
 
 clean:
-	rm -f *.hex *.elf $(OBJECTS)
+	rm -f *.hex *.elf $(ObjectsFromSRC)
 
 # file targets
 FIGnition.elf: $(OBJECTS) $(HEADERS)
