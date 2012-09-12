@@ -87,17 +87,18 @@ void SramAbsOpenWr(ushort addr, byte value)
 	SpiMasterTransmit(SramInsWrite);
 	SpiMasterTransmit((byte)(addr>>8)); // high byte.
 	SpiMasterTransmit((byte)(addr&0xff)); // low byte.
-	SpiMasterTransmit(value); // finally the value.
+	//SpiMasterTransmit(value); // finally the value.
+	SPDR=value; // start write (making it an open write, no waiting).
 	//SramDisableCS();
 }
 
 void SramAbsBeginRd(ushort addr)
 {
 	byte data;
-	SramEnableCS();
-	SpiMasterTransmit(SramInsRead);
-	SpiMasterTransmit((byte)(addr>>8)); // high byte.
-	SpiMasterTransmit((byte)(addr&0xff)); // low byte.
+	//SramEnableCS(); // TODO @Check.
+	_SpiMasterTransmit(SramInsRead,_SpiNullTask);
+	_SpiMasterTransmit((byte)(addr>>8),_SpiNullTask); // high byte.
+	_SpiMasterTransmit((byte)(addr&0xff),_SpiNullTask); // low byte.
 	//SpiMasterTransmit(0); // Start off the byte read.
 	SPDR = 0;	// start read
 	//data=SpiMasterReadByte();

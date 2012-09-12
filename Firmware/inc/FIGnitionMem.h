@@ -49,7 +49,16 @@
 
 #ifndef __MACROMEM__
 
+#if 0
+
 extern ushort gRamCache;
+#define SramFlush() gRamCache=0;	// can't read from ROM. 
+
+#else
+
+#define SramFlush()
+
+#endif
 
 //#define __LOGFNREADMEM__
 

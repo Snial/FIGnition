@@ -46,9 +46,10 @@
 
 extern void PrintAt(byte x, byte y);
 
-extern void Scroll(void);
+extern void Scroll(char dy);
 
 extern void Emit(char ch);
+extern void EmitW(short ch);
 
 // @TODO Should be only for debugging.
 //#define __USE_DOTQUOTE__
@@ -114,8 +115,12 @@ extern void Cls(void);
  *  11    1  0
  *
  *
+ * Bits 0 and 1 define the pen mode.
+ * Bits 6 and 7 define the graphics mode:
+ * 00 = Normal Text mode with UDGs.
+ * 01 = Bitmapped 160x160.
  **/
-#define gPenMode GPIOR0
+#define gPenMode GPIOR1
 #define kMaxXCoord (kVideoBuffWidth*2)
 #define kMaxYCoord (kVideoBuffHeight*2)
 // Pixel character codes occupy bits 0..2 and bit 7.
@@ -123,6 +128,10 @@ extern void Cls(void);
 #define kPixCharBase 16
 // Inverse pixels also have inverted codes in bits 0..7
 #define kPixBitsReInvert 0x8f
+
+#define kMaxHiResX 159
+#define kMaxHiResY 159
+#define kVideoHiResBase 0x9380
 
 extern void Plot(byte x, byte y);
 

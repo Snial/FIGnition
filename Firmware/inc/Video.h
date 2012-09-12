@@ -92,8 +92,14 @@
 #define kFrameSyncPostEqual ((kHSyncScanShort+1)*4)
 #define kFrameFieldScans 255
 #define kFrameVideoScans 192
+
+#define kFrameKeyPromptScans 16
+#define kFrameKeyPromptScanPeriod ((kHSyncScan+1)*kFrameKeyPromptScans)
+#define kFrameKeyPromptLeftmargin (((kVideoBuffWidth-5)/2)*4)
+
+
 #define kFrameVideoScanperiod ((kHSyncScan+1)*kFrameVideoScans)
-#define kFrameVideoMarginTopScans ((kFrameFieldScans-kFrameVideoScans)/2)
+#define kFrameVideoMarginTopScans ((kFrameFieldScans-kFrameVideoScans-kFrameKeyPromptScans)/2)
 #define kFrameVideoMarginTopScansPeriod (kFrameVideoMarginTopScans*(kHSyncScan+1))
 #define kFrameVideoMarginBottomScans (kFrameFieldScans-kFrameVideoScans-kFrameVideoMarginTopScans)
 #define kFrameVideoMarginBottomScansPeriod (kFrameVideoMarginBottomScans*(kHSyncScan+1))
@@ -135,7 +141,7 @@
  *							?). So there's 304 left. We use 192 for real
  *							video.
  *									OCR1A += kFrameVideoMarginTopScansPeriod
- *	kFrameSyncVideoGen		Sets up HSync to generate full pulses - which is what
+ *	kFrameSyncBMVideoPrefetch	Sets up HSync to generate full pulses - which is what
  *							it was doing before. Sets up FrameSync to generate
  *							ScanLine events.
  *  kFrameSyncScanStart		If scan<maxScanLine then ...
@@ -178,7 +184,7 @@ typedef enum {
 	kFrameSyncLastEqualize,
 	kFrameSyncPostEqualize,
 	kFrameSyncTopMargin,
-	kFrameSyncVideoGen,
+	kFrameSyncBMVideoPrefetch,
 	kFrameSyncScanLine,
 	kFrameSyncScanGen,
 	kFrameSyncBotMargin,

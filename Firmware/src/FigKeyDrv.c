@@ -81,8 +81,8 @@ const byte gKeyCode[2][9][8] PROGMEM = {
 		{ '\"', ';', kKeyCmd, ':', '!', ',', kKeyCtrl, '.' },
 		{ '-', '5', '4', '\0', '3', '2', '1', '\0' }
 	},
-	{	// shifted keygroup 0 isn't really possible.
-		{ '\n', ' ', '\012', '\0', '\177', '\011', '\013', '\010' },
+	{	// 
+		{ kKeyExe, kKeyComplete, '\012', '\0', '\177', '\016', '\013', '\017' },
 		{ 'Z', 'Y', 'X', 'W', 'Z', 'V', 'U', 'T' },
 		{ 'L', 'S', 'K', 'J', 'I', 'S', 'H', 'G' },
 		{ '&', ']', '\0', '[', '\140' /* uk pound */, '\\', '\0', '^' },
@@ -100,7 +100,7 @@ const byte gKeyCode[2][9][8] PROGMEM = {
 
 const byte gSingleKeyCode[2][8] PROGMEM = {
 		{ '\010', '\013', '\011', '\007', '\0',  '\012', ' ', kKeyEnter },
-		{ '\010', '\013', '\011', '\177', '\0', '\012', kKeyEsc, '\n' },
+		{ kKeyPrev, '\013', kKeyPrev, kKeyEsc, '\0', '\012', kKeyComplete , kKeyExe },
 	};
 
 const byte gKeyCode[2][8][8] PROGMEM = {

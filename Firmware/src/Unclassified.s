@@ -289,6 +289,11 @@ IndCCall:
 	push r25
 	push r26
 	push r27
+	push r0
+	push r1
+	in r1,__SREG__
+	push r1
+	eor r1,r1
 	ldd r31,Y+3 ;hi byte
 	ldd r30,Y+4 ;lo byte of ret address (in Flash).
 	;But it's in word addressing, not byte addressing.
@@ -315,6 +320,10 @@ IndCCall:
 	lsr r31
 	ror r30	;it was given in normal addresses.
 	icall		;and call it.
+	pop r1
+	out __SREG__,r1
+	pop r1
+	pop r0
 	pop r27
 	pop r26
 	pop r25

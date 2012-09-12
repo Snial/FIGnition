@@ -36,6 +36,7 @@
  */
 
 #include "CoreDefs.h"
+#include "GraphIO.h"
 #include "StartScreen.h"
 
 #ifdef _ShowStartScreen_
@@ -74,17 +75,20 @@ const byte kStartupImage[kStartupImageHeight][kStartupImageWidth] PROGMEM = {
 
 void StartupScreen(void)
 {
-	byte ox=(kVideoBuffWidth-kStartupImageWidth)/2;
-	byte oy=(kVideoBuffHeight-kStartupImageHeight)/2;
+	//byte ox=(kVideoBuffWidth-kStartupImageWidth)/2;
+	//byte oy=(kVideoBuffHeight-kStartupImageHeight)/2;
 	byte row,col;
 	byte *img=(byte*)kStartupImage;
+	byte *dst=VideoAddr((kVideoBuffWidth-kStartupImageWidth)/2,
+							(kVideoBuffHeight-kStartupImageHeight)/2);
 	Cls();
 	for(row=0;row<kStartupImageHeight;row++) {
-		PrintAt(ox,oy+row);
+		//PrintAt(ox,oy+row);
 		for(col=0;col<kStartupImageWidth;col++) {
-			*gSysVars.gCur++ = GetPgmByte(*img);
+			dst[col] = GetPgmByte(*img);
 			img++;
 		}
+		dst+=kVideoBuffWidth;
 	}
 	ushort timeout=gClock+100;
 	while(timeout-gClock>0)

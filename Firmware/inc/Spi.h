@@ -77,11 +77,35 @@ extern void SpiMasterInit(void);
 
 //#define __TESTSPIREADY__
 
-extern void SpiMasterTransmit(byte cData);
-
-extern byte SpiMasterAutoReadByte(void);
-
 #ifdef __AUTOSPI__
+
+#ifdef __TESTSPIREADY__
+#define _SpiTransmitMonitor					\
+		SetLed((gClock>>4)&1);				\
+		if(timeout-gClock<0) { /* bad! */	\
+			Emit('@');						\
+			DotHex(SPCR);					\
+			Emit(' ');						\
+			DotHex(SPSR);					\
+			Emit(' ');						\
+			DotHex(DDRB);					\
+			Emit(' ');						\
+			DotHex(PORTB);					\
+			timeout=gClock+50;				\
+		}
+#else 
+#define _SpiTransmitMonitor
+#endif
+
+#define _SpiNullTask
+
+#define _SpiMasterTransmit(cData,task) 			\
+{ 											\
+	SPDR = cData;							\
+	while(!(SPSR & (1<<SPIF))) {			\
+		task						\
+	}										\
+}
 
 #define SpiMasterReadByte() SpiMasterAutoReadByte()
 
@@ -90,6 +114,11 @@ extern byte SpiMasterAutoReadByte(void);
 #define SpiMasterReadByte() SpiMasterTransmit(0)
 
 #endif
+
+extern void SpiMasterTransmit(byte cData);
+
+extern byte SpiMasterAutoReadByte(void);
+
 
 //#define __TestSpiSignals__
 

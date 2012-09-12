@@ -85,11 +85,11 @@ extern void TestForth(void);
 #else
 
 extern byte _etext;		// was _fthROM
-
+extern byte _fthROM;
 //#define gForthRom (&_etext)
 
 #define gForthRom ((byte*)0)
-#define gForthBootAddr (&_etext)
+#define gForthBootAddr (&_fthROM)
 
 // If there's no test rom, then there's no need to copy the bootstrap.
 #define ForthCopyBootStrap()

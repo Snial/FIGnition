@@ -36,6 +36,9 @@
  * See FigVFlash.h for usage.
  */
 
+#include "FIGnitionMem.h"
+#include "GraphIO.h"
+
 #include "FigVFlash.h"
 
 ushort VDskBaseBlock()
@@ -107,7 +110,7 @@ void VDskErase()
 	for(ePage=0;ePage<VDskSize()+VDskBaseBlock();ePage+=16) {
 		if(symmetrical || ePage==0 || ePage==16 || ePage==32 || ePage==64 ||
 				(ePage&(eSize-1))==0) {
-			PrintAt(0,21);
+			PrintAt(0,20);
 			DotHex(ePage);
 			SerialFlashEraseSector(ePage);
 		}
@@ -230,7 +233,7 @@ ushort VDskFind(ushort block, byte *buff)
 ushort VDskRead(ushort block, byte *dest)
 {
 	ushort phys;
-	if(block&0x4000) {
+	if(block&0x4000) { // disk blocks in the range 16K to 32K are read as phys.
 		InterruptSpi();
 		phys=block&~VDskTableWrapMask;
 	}

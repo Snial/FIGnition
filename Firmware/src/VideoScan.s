@@ -40,12 +40,10 @@
 
 	.data
 
-.global gVPtr,gScanRow
+.global gScanRow
 
 ;gFrameSyncState:
 ;	.byte 0
-gVPtr:	// 2 byte var.
-	.word 0
 gScanRow:
 	.byte 0
 
@@ -126,12 +124,20 @@ VideoScan:
 	;nop
 	;nop
 	;Character-based screen handling.
+	ldi xl,kVideoBuffWidth
+	mov xh,yh
+	lsr xh
+	lsr xh
+	lsr xh
+	mul xl,xh
+	ldi xl,lo8(gVideoBuff)
+	ldi xh,hi8(gVideoBuff)	;destination: video buff.
+	add xl,r0
+	adc xh,r1	;x^Video now. Cost was 2xlds at 4c, 8b, now: 22b, 13c. -14b (7ins).
 	andi yh,7
 	push scanCount
 	ldi scanCount,kVideoBuffWidth-1	;25 bytes in a scan.
 	;12c.
-	lds xl,gVPtr
-	lds xh,gVPtr+1	;can use main RAM. 21c.
 	ldi r16,8	;multiplier
 	ldi zh,0x0
 	ldi zl,TXEN0
@@ -242,10 +248,12 @@ VideoScanPrompt03:
 	
 VideoScanEnd:
 ;End of scan.
+#if 0
 	cpi yh,7	;row count==7?
 	brlt VideoScanEnd1
 	sts gVPtr,xl
 	sts gVPtr+1,xh	;increment to next row.
+#endif
 VideoScanEnd1:
 	lds yh,gScanRow
 VideoScanEnd1a:

@@ -82,6 +82,13 @@ extern void SramAbsBeginRd(ushort addr);
 		dst=SPDR;			/* read the byte.*/		\
 	}
 
+#define SramWaitDataStartNext(dst) {							\
+		while(!(SPSR & (1<<SPIF)))					\
+			;				 /* wait for RAM OK.*/	\
+		dst=SPDR;			/* read the byte.*/		\
+		SPDR=dst;		/* start next read */	\
+	}
+
 #define SramAbsOpenRd(dst, addr) { SramAbsBeginRd(addr); SramWaitData(dst); }
 
 #define SramAbsRead(dst,addr) { SramAbsOpenRd(dst,addr); SramDisableCS(); }

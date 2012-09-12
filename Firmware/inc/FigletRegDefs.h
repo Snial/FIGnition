@@ -98,3 +98,46 @@ WCOL = 6
 SPI2X = 0
 
 SPDR = 0x2e
+
+;GPIOR defs
+GPIOR1 = 0x2a
+
+GPIOR0 = 0x1e
+gPenModeIO = GPIOR1
+gPenMode = GPIOR1+0x20
+
+;PCMSK interrupts.
+PCMSK0 = 0x6b
+PCINT0 = 1
+PCINT1 = 2
+PCIFR = 0x1b
+
+#define gPcIfr (PCIFR+0x20)
+
+/**
+ * gSysFlags are high priority kernel flags.
+ * Bit 0 is the HiRes video refill, 1 if a video request is being made.
+ * Bit 1 is the ROM Execution flag. We can't use gIP.15 directly, because
+ *       'C' routines might use it for different purposes, so we set a
+ *		 flag to determine it.
+ **/
+#define gSysFlagsIO GPIOR0
+#define gSysFlags (GPIOR0+0x20)
+#define gSysFlags_HiResBit 0
+#define gSysFlags_RomExeBit 1
+
+/**
+ * Access to SysVars.
+ **/
+#define gSysVars_gCur (gSysVars+0)
+#define gSysVars_gCurX (gSysVars+2)
+#define gSysVars_buff (gSysVars+3)
+#define gSysVars_gKScan (gSysVars+11)
+#define gSysVars_stackFrame (gSysVars+12)
+
+/**
+ * Other important locations.
+ * 
+ **/
+
+#define gBlkBuff (0xfe00)

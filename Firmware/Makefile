@@ -57,7 +57,6 @@
 #    cp FIGnitionRev.hex bin/FirmwareRev0_A_B_CC.hex
 #
 
-#DEVICE     = atmega328
 DEVICE     = atmega168
 #DEVICE     = atmega88
 #CLOCK      = 16000000
@@ -71,18 +70,20 @@ OBJDIR = obj/
 ObjectsFromSRC := $(subst $(SRCDIR),$(OBJDIR), $(patsubst %.c,%.o,$(CSRCS)) \
 				$(patsubst %.s,%.o,$(ASMSRCS)) )
 
-#FigForth.o needs to come last for linking purposes.
-ObjectsFromObj := $(patsubst $(OBJDIR)FigForth.o,,$(wildcard $(OBJDIR)*.o)) $(OBJDIR)FigForth.o
+#The FORTHROM needs to come last for linking purposes.
+FORTHROM = FigRom.o
+ObjectsFromObj := $(patsubst $(OBJDIR)$(FORTHROM),,$(wildcard $(OBJDIR)*.o)) $(OBJDIR)$(FORTHROM)
 
 OBJECTS	= $(filter-out $(ObjectsFromObj),$(ObjectsFromSRC)) $(ObjectsFromObj)
-OBJECTSDEBUG = $(filter-out FigForth.o,$(OBJECTS)) ForthDebug.o
+OBJECTSDEBUG = $(filter-out $(FORTHROM),$(OBJECTS)) ForthDebug.o
+
+
+NTSCDIR = objNTSC/
+NTSCOBJECTS = $(subst $(OBJDIR)Video.o, $(NTSCDIR)Video.o, $(OBJECTS))
 
 INCDIR = inc/
 
 HEADERS := $(wildcard $(INCDIR)*.h)
-
-#HEADERS    = Video.h GraphIO.h Spi.h MicrochipSramSpi.h AmicFlashSpi.h \
-#					FigKeyDrv.h FigEdit.h FigVFlash.h FIGnitionMem.h StartScreen.h VMTest.h VM.h LLDebug.h ForthDebug.h
 
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0x24:m
 LDSCRIPT = avr4.ld -Xlinker --defsym -Xlinker __stack=0x4ff
@@ -133,13 +134,22 @@ COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fno-inline -I$(INC
 
 # symbolic targets:
 %.o : %.c
-	$(COMPILE) -c $< -o $@
+	$(COMPILE) -D__VideoGenPAL__=1 -c $< -o $@
 
 $(OBJDIR)%.o : $(SRCDIR)%.c
-	$(COMPILE) -c $< -o $@
+	$(COMPILE) -D__VideoGenPAL__=1 -c $< -o $@
 
 $(OBJDIR)%.o : $(SRCDIR)%.s
-	$(COMPILE) -DRamBase=0x8000 -x assembler-with-cpp -c $< -o $@
+	$(COMPILE) -D__VideoGenPAL__=1 -DFigVer=$(FIGVER) -DRamBase=0x8000 -x assembler-with-cpp -c $< -o $@
+
+$(SRCDIR)FigRom.s : $(SRCDIR)FigRom.fth
+	Tools/FFC src/FigRom.fth src/FigRom.s -r FigRom.rel > FigRom.log
+
+$(OBJDIR)FigRom.o : $(SRCDIR)FigRom.s
+	$(COMPILE) -DFigVer=$(FIGVER) -DRamBase=0x8000 -x assembler-with-cpp -c $< -o $@
+
+$(NTSCDIR)Video.o : $(SRCDIR)Video.c
+	$(COMPILE) -D__VideoGenNTSC__=1 -DFigVer=$(FIGVER) -c $< -o $@
 
 # "-x assembler-with-cpp" should not be necessary since this is the default
 # file type for the .S (with capital S) extension. However, upper case
@@ -165,26 +175,27 @@ load: all
 clean:
 	rm -f *.hex *.elf $(ObjectsFromSRC)
 
-# file targets
-FIGnition.elf: $(OBJECTS) $(HEADERS)
-	$(COMPILE) -T $(LDSCRIPT) -o FIGnition.elf $(OBJECTS)
+#  file targets
+FIGnitionPAL.elf: $(OBJECTS) $(HEADERS)
+	$(COMPILE) -T $(LDSCRIPT) -o FIGnitionPAL.elf $(OBJECTS)
 
-FIGnition.hex: FIGnition.elf
-	rm -f FIGnition.hex
-	avr-objcopy -j .text -j .fth -j .data -O ihex FIGnition.elf FIGnition.hex
+FIGnitionPAL.hex: FIGnitionPAL.elf
+	rm -f FIGnitionPAL.hex
+	avr-objcopy -j .text -j .fth -j .data -O ihex FIGnitionPAL.elf FIGnitionPALTmp.hex
+	Tools/SwapHex FIGnitionPALTmp.hex FigRom.rel -automin FIGnitionPAL.hex > SwapHex.log
 
-$(OBJDIR)FigForthHi.o : $(SRCDIR)FigForth.S  $(HEADERS)
-	$(COMPILE) -DRamBase=0xa000 -DBigSymbFix -x assembler-with-cpp -c $< -o $@
+FIGnitionNTSC.elf: $(NTSCOBJECTS) $(HEADERS)
+	$(COMPILE) -T $(LDSCRIPT) -o FIGnitionNTSC.elf $(NTSCOBJECTS)
 
-#ForthHiHack.o : ForthHiHack.c  $(INCDIR)CoreDefs.h
-#	$(COMPILE) -DRamBase=0xa000 -c $< -o $@
+FIGnitionNTSC.hex: FIGnitionNTSC.elf
+	rm -f FIGnitionNTSC.hex
+	avr-objcopy -j .text -j .fth -j .data -O ihex FIGnitionNTSC.elf FIGnitionNTSCTmp.hex
+	Tools/SwapHex FIGnitionNTSCTmp.hex FigRom.rel -automin FIGnitionNTSC.hex > SwapHex.log
 
-FIGnitionHi.elf: $(OBJECTS) ForthHiHack.o
-	$(COMPILE) -T $(LDSCRIPTHI) -o FIGnitionHi.elf ForthHiHack.o $(OBJECTS)
-
-FIGnitionHi.hex: FIGnitionHi.elf
-	rm -f FIGnitionHi.hex
-	avr-objcopy -j .text -j .fth -j .data -O ihex FIGnitionHi.elf FIGnitionHi.hex
+# Complete Distro
+Distro :
+	make $(FIGVER) FIGnitionPAL.hex
+	make $(FIGVER) FIGnitionNTSC.hex
 
 # Debug Targets
 FIGnitionDbg.elf: $(OBJECTSDEBUG) $(HEADERS)
@@ -194,19 +205,12 @@ FIGnitionDbg.hex: FIGnitionDbg.elf
 	rm -f FIGnitionDbg.hex
 	avr-objcopy -j .text -j .fth -j .data -O ihex FIGnitionDbg.elf FIGnitionDbg.hex
 
-
-FIGnition.bin: FIGnition.elf
-	rm -f FIGnition.bin
-	avr-objcopy -R .eeprom -O binary FIGnition.elf FIGnition.bin
-	avr-objcopy -j .eeprom -O binary FIGnition.elf FIGnition.bin.eeprom
-
 TestEEPromGen.elf: TestEEPromGen.o
 	$(COMPILE) -T $(LDSCRIPTHI) -o TestEEPromGen.elf TestEEPromGen.o
 
 TestEEPromGen.hex: TestEEPromGen.elf
 	rm -f TestEEPromGen.hex
 	avr-objcopy -j .text -j .data -j .eeprom -O ihex TestEEPromGen.elf TestEEPromGen.hex
-
 
 # If you have an EEPROM section, you must also create a hex file for the
 # EEPROM and add it to the "flash" target.

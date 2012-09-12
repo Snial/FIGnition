@@ -171,7 +171,7 @@ SECTIONS
   .bss   : AT (ADDR (.bss))
   {
      PROVIDE (__bss_start = .) ;
-    *(SORT_BY_NAME(.bss))
+    /* *(SORT_BY_NAME(.bss)) */
     *(.bss*)
     *(COMMON)
      PROVIDE (__bss_end = .) ;

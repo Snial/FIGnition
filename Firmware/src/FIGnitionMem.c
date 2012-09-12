@@ -53,8 +53,6 @@
 
 #ifndef __MACROMEM__
 
-ushort gRamCache;
-
 //#define __LOGFNREADMEM__
 
 #ifdef __LOGFNREADMEM__
@@ -77,6 +75,8 @@ void InterruptSpi()
 }
 
 #if 0
+
+ushort gRamCache;
 
 byte _FnReadMem(ushort addr)
 {
@@ -151,15 +151,24 @@ void WriteMem(ushort addr, byte *data, ushort len)
 		return;	// do nothing if len==0.
 	addr&=0x7fff;	// mask into RAM.
 	// first cancel any outstanding operations.
+#if 0
 	SramDisableCS();
 	SPCR &= ~(1<<SPE); // disable the SPI.
 	// Disable SPI system (clear the clock).
 	// Wait for at least 400ns (2.5MHz max).
-	short qTimeout=(short)TCNT1+1;
+	short qTimeout=(short)TCNT1;
 	do {
 		SPSR|SPDR;	// wait 400ns for CS to have an effect.
 	}while(qTimeout-(short)TCNT1>=0);
 	SPCR |= (1<<SPE); // enable the SPI in the same mode. (restart?)
+#else
+	{
+		byte to=4;
+		while(!(SPSR & (1<<SPIF))&& --to ) ;	// just wait for memory to complete.
+		byte dummy=SPDR;
+		SramDisableCS();
+	}
+#endif
 	/**
 	 *  Note: when writing bytes, we do it the normal
 	 * way, waiting for the operation to complete, prefetching
@@ -172,16 +181,39 @@ void WriteMem(ushort addr, byte *data, ushort len)
 			Emit(',');
 		}
 #endif
-	SramAbsOpenWr(addr++,*data++);	// write first byte.
-	while(--len!=0) {
+	asm volatile("nop");
+#if 0
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+#endif
+	SramEnableCS();
+#if 0
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+	asm volatile("nop");
+#endif
+	//SramAbsOpenWr(addr++,*data++);	// write first byte.
+	_SpiMasterTransmit(SramInsWrite,_SpiNullTask);
+	_SpiMasterTransmit((byte)(addr>>8),_SpiNullTask); // high byte.
+	SPDR = (byte)(addr&0xff); // low byte.
+	//while(--len!=0) {
+	do{
 #ifdef __LOGFNREADMEM__
+		//addr++;
 		if(gReadMemLogging) {
 			DotHex(*data);
 			Emit(',');
 		}
 #endif
-		SpiMasterTransmit(*data++);	// wait for complete.
-	}
+		while(!(SPSR & (1<<SPIF)))
+			;
+		//SpiMasterTransmit(*data++);	// wait for complete.
+		SPDR = *data++;
+	}while(--len!=0);
 	// Data has finished transmitting (flag is set).
 	// Need to restart reading though.
 	SramFlush();

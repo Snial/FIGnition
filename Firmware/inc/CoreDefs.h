@@ -48,11 +48,24 @@
 #define kFalse 0
 
 typedef unsigned char byte;
+typedef unsigned char tBool;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 
+/**
+ * gSysFlags are high priority kernel flags.
+ * Bit 0 is the HiRes video refill, 1 if a video request is being made (Deprecated).
+ * Bit 1 is the ROM Execution flag. We can't use gIP.15 directly, because
+ *       'C' routines might use it for different purposes, so we set a
+ *		 flag to determine it.
+ * Bit 2 will be the Bitmap mode.
+ **/
+#define gSysFlags GPIOR0
+#define gSysFlags_HiResBit 0
+#define gSysFlags_RomExeBit 1
+#define gSysFlags_HiResScanBit 3
 
-#define __VideoGenPAL__
+//#define __VideoGenPAL__
 //#define __VideoGenNTSC__
 
 #ifdef __VideoGenPAL__
@@ -120,10 +133,13 @@ typedef unsigned long ulong;
 #define kHSyncPulse4us (12-1)
 #define kHSyncScanShort (80-1)
 #define kHSyncPulse2us (6-1)
-#define kFrameVideoMarginLeft (18-1) // actually about 4c later or .2us or 2 pixels.
+#define kFrameVideoMarginLeft (14-1) // actually about 4c later or .2us or 2 pixels.
 #define kVideoBuffWidth 25
+#define kVideoBuffHeight 24
 //#define kVideoBuffWidth 48
 #define kUdgChrs 16
+#define kVideoDotClock 1
+
 #endif
 
 
@@ -133,27 +149,23 @@ typedef unsigned long ulong;
 #define kChrSetBytesPerChar 8
 
 typedef struct {
-	byte *gCur;
-	byte gCurX;	// not sure if we need gCurY.
-	byte buff[8];	// temp buffer.
-	byte gKScan;	// debounced key.
+	byte *gCur;	// offset 0
+	byte gCurX;	// offset 2 not sure if we need gCurY.
+	byte buff[8];	// offset 3 temp buffer.
+	byte gKScan;	// offset 11 debounced key.
+	byte *stackFrame; // offset 12 Parameter Frame Pointer.
 } tSysVars;
 
 extern tSysVars gSysVars;
 
 extern byte gVideoBuff[kVideoBuffWidth*kVideoBuffHeight+kUdgChrs*kChrSetBytesPerChar];
 #define gUDGBase (gVideoBuff+kVideoBuffWidth*kVideoBuffHeight)
-extern volatile byte *gVPtr;	// defined in assembler.
+//extern volatile byte *gVPtr;	// defined in assembler.
 
 //extern byte *gCur;
 //extern byte gCurY;
 
 extern volatile short gClock;
-extern void Cls();
-extern void PrintAt(byte x, byte y);
-extern void DotHex(ushort x);
-extern void Dot(int x);
-extern void Emit(char ch);
 extern void _cmove(ushort src, ushort dst, ushort len);
 extern void SetLed(byte state);
 
@@ -165,10 +177,6 @@ extern void SerialFlashEraseSector(ushort sector);
 extern void SerialFlashReadBlock(ushort block, byte *dest);
 extern void SerialFlashWriteBlock(ushort block, byte *src);
 extern ushort SerialFlashID(void);
-
-extern ushort gRamCache;
-#define SramFlush() gRamCache=0;	// can't read from ROM. 
-extern void InterruptSpi();
 
 // Keycode definitions.
 
@@ -184,10 +192,13 @@ extern void InterruptSpi();
 #define kKeyCmd     (0x80+'+')
 #define kKeyCtrl    (0x80+'^')
 #define kKeyEsc     27
-
+#define kKeyExe		(0x80+'\r')
+#define kKeyNext '\016'
+#define kKeyPrev '\017'
+#define kKeyComplete (0x80+' ')
 extern byte KeyP(void);
 extern byte Key(void);
 
-
+extern void __fill(ushort src, ushort len, char ch);
 
 #endif

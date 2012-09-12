@@ -90,33 +90,16 @@ void SpiMasterTransmit(byte cData)
 	short timeout;
 #endif
 	_SpiDebug(cData);
-	SPDR = cData; 
-	/* Wait for transmission complete */ 
 #ifdef __TESTSPIREADY__
 	timeout=gClock+50;
 #endif
-	while(!(SPSR & (1<<SPIF))) {
-#ifdef __TESTSPIREADY__
-		SetLed((gClock>>4)&1);
-		if(timeout-gClock<0) { // bad!
-			Emit('@');
-			DotHex(SPCR);
-			Emit(' ');
-			DotHex(SPSR);
-			Emit(' ');
-			DotHex(DDRB);
-			Emit(' ');
-			DotHex(PORTB);
-			timeout=gClock+50;
-		}
-#endif
-	}
+	_SpiMasterTransmit(cData,_SpiTransmitMonitor);
 }
 
 byte SpiMasterAutoReadByte(void)
 {
 	byte res;
-	SpiMasterTransmit(0);	// dummy data.
+	_SpiMasterTransmit(0,_SpiNullTask);	// dummy data.
 	res=SPDR;
 	return res;	// return the data.
 }

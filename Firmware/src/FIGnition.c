@@ -49,8 +49,6 @@
 
 tSysVars gSysVars;
 
-byte gVideoBuff[kVideoBuffWidth*kVideoBuffHeight+kUdgChrs*kChrSetBytesPerChar];
-
 #define __KEYPAD8KEY__
 
 #ifdef __KEYPAD8KEY__
@@ -88,7 +86,7 @@ byte KeyHeart()
 #include "AmicFlashSpi.h"
 
 #include "VMTest.h"
-#include "ForthOps.h"
+//#include "ForthOps.h"
 
 #include "FIGnitionMem.h"
 
@@ -97,7 +95,7 @@ byte KeyHeart()
 /**
  * Editor Support.
  **/
-#include "FigEdit.h"
+//#include "FigEdit.h"
 #include "FigVFlash.h"
 
 #define __TESTHSCANVARS__
@@ -115,7 +113,7 @@ void FignitionInit(void)
 	PORTC |= (1<<5);	// PC5 is a user-pin.
 	DDRD &= ~((1<<6) | (1<<0));
 	PORTD |= (1<<6) | (1<<0);	// PD0 is a user-pin.
-	
+	gSysFlags=0; // Clear the system flags.
 	/*
 	for(;;) {
 		kLedPort=ledPattern;
@@ -168,6 +166,9 @@ void FignitionInit(void)
 	KeyInit();	// init the keyboard.
 	SpiMasterInit();
 	SramInit();
+	gSysFlags=0;
+	PCMSK0=0;
+	PCICR=0;
 	SyncInit(); // Start the video.
 	//Cls();
 	TestVideo();

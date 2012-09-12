@@ -298,8 +298,6 @@ ISR(__vector_11) // Timer1 comp A.
 			UCSR0B=0;	// disable tx.
 */
 			gScanRow++; // simulate UDGRow inc.
-			if((gScanRow&7)==0)	// so every 8 UDGRow incs we increment gVPtr,
-				gVPtr+=kVideoBuffWidth; // giving us the next char line.
 #else
 		//byte row=gScanRow;
 		//ushort vPtr=gAltVPtr;
@@ -313,7 +311,7 @@ ISR(__vector_11) // Timer1 comp A.
 		//	__HANG();
 #endif
 		
-		TIMSK0=2; // enable the Timer0 interrupt (serial debug).
+		//TIMSK0=2; // enable the Timer0 interrupt (serial debug).
 		// finished video.
 		if(gScanRow==0) {	// if the scan row has been reset, we've finished.
 			//OCR1A += kFrameVideoMarginBottomScansPeriod+(kHSyncScan+1)-kFrameVideoMarginLeft;
@@ -369,13 +367,13 @@ ISR(__vector_11) // Timer1 comp A.
 	case kFrameSyncLastEqualize:
 		// 5 half scans and gen interrupt 6us earlier (just as the
 		// last sync pulse finishes).
-		TIMSK0=0; // disable all the Timer0 interrupts for 32us.
+		//TIMSK0=0; // disable all the Timer0 interrupts for 32us.
 		OCR1A += kHSyncScanShort+1-(kHSyncPulse4us+1)-(kHSyncPulse2us+1);
 		gFrameSyncState=(byte)kFrameSyncPostEqualize;
 		break;
 	case kFrameSyncPostEqualize:
 		// OCR2A as before.
-		TIMSK0=2; // Enable Timer0 OC0A interrupt!
+		//TIMSK0=2; // Enable Timer0 OC0A interrupt (this was for the bit-banged UART)
 		OCR2B = kHSyncPulse2us;
 		OCR1A += kFrameSyncEqual+(kHSyncPulse2us+1); // 5 half scans.
 		// Back to 4us after the start of the scan.
@@ -385,7 +383,6 @@ ISR(__vector_11) // Timer1 comp A.
 		OCR2A = kHSyncScan;
 		OCR2B = kHSyncPulse4us;
 		// The next interrupt will occur just after the sync
-		gVPtr=gVideoBuff;
 #ifdef __SUPPORT_BM_MODE_		
 		if((gSysFlags&(1<<gSysFlags_HiResBit))) {
 			gScanRow=16;
@@ -429,39 +426,12 @@ ISR(__vector_11) // Timer1 comp A.
 #endif
 		OCR1A += kFrameVideoMarginLeft; // get ready for next line.
 		// The only other interrupt we use is OCIE0A.
-		TIMSK0=0; // disable all the Timer0 interrupts!
+		//TIMSK0=0; // disable all the Timer0 interrupts!
 		gFrameSyncState=(byte)kFrameSyncScanGen;
 		sei();
 		// SMCR|=(1<<SE);
 		sleep_cpu(); // we'll actually get re-interrupted here.
 		break;
-#if 0
-	case kFrameSyncScanGen:
-		// next interrupt as sync finishes.
-		//__HANG();
-#ifdef __TestFakeLineScan
-			gUDGRow+=32; // simulate UDGRow inc.
-			if(gUDGRow==0)	// so every 8 UDGRow incs we increment gVPtr,
-				gVPtr+=kVideoBuffWidth; // giving us the next char line.
-#else
-		asm volatile("call VideoScan"); // assuming the symbol works!
-#endif
-		
-		TIMSK0=2; // enable the Timer0 interrupt (serial debug).
-		// finished video.
-		if(gVPtr>=&gVideoBuff[kVideoBuffWidth*kVideoBuffHeight]) {
-			OCR1A += kFrameVideoMarginBottomScansPeriod+kHSyncScan+1-kFrameVideoMarginLeft;
-			gFrameSyncState=kFrameSyncPreEqualize;
-			gClock++;
-			//asm volatile("call IndCCall");
-			//asm volatile(".word KeyScan/2");
-		}
-		else {
-			OCR1A += kHSyncScan+1-kFrameVideoMarginLeft;
-			gFrameSyncState=(byte)kFrameSyncScanLine;
-		}
-		break;
-#endif
 	case kFrameSyncBotMargin:
 		// sync at beginning of pre equal pulse
 		OCR1A+=(kHSyncScan+1)-(kHSyncPulse4us+1);

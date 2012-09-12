@@ -2,83 +2,90 @@
 #ifndef _FORTHOPS_H
 #define _FORTHOPS_H 1
 
+#ifndef _FFCDef
 
-	// 0..5		******
-#define kFigNext 0
-#define kFigLit 1
-#define kFigExecute 2
-#define kFigDrop 3
-#define kFigOBranch 4
-#define kFigBranch 5
+#define _FFCDef(label,byteCode,text) .set label , byteCode
+
+#endif
+
+// 0..5		******
+_FFCDef(kFigNext,0,"(nop)")
+_FFCDef(kFigLit,1,"(lit16)")
+_FFCDef(kFigExecute,2,"exec")
+_FFCDef(kFigDrop,3,"drop")
+_FFCDef(kFigOBranch,4,"(0branch)")
+_FFCDef(kFigBranch,5,"(branch)")
+
 	// 6..11	****x*
-#define kFigLoop 6
-#define kFigPlusLoop 7
-#define kFigDo 8
-#define kFigUMult 9
-#define kFigPortMod 10
-#define kFigUDivMod 11
+_FFCDef(kFigLoop, 6,"(loop)")
+_FFCDef(kFigPlusLoop, 7,"(+loop)")
+_FFCDef(kFigDo, 8,"(do)")
+_FFCDef(kFigUMult, 9,"u*")
+_FFCDef(kFigPortMod, 10,">port>")
+_FFCDef(kFigUDivMod, 11,"u/")
 
 	// 12..17	******
-#define kFigOpAnd 12
-#define kFigOpOr 13
-#define kFigOpXor 14
-#define kFigLeave 15
-#define kFigDoes 16
-#define kFigRFrom 17
+_FFCDef(kFigOpAnd, 12,"and")
+_FFCDef(kFigOpOr, 13,"or")
+_FFCDef(kFigOpXor, 14,"xor")
+_FFCDef(kFigLeave, 15,"leave")
+_FFCDef(kFigDoes, 16,"(does)")
+_FFCDef(kFigRFrom, 17,"r>")
 
-	// 18..23	******	
-#define kFigRFetch 18
-#define kFigToR 19
-#define kFigZeroEq 20
-#define kFigZeroLt 21
-#define kFigPlus 22
-#define kFigDPlus 23
+	// 18..23	******
+_FFCDef(kFigRFetch, 18,"r")
+_FFCDef(kFigToR, 19,">r")
+_FFCDef(kFigZeroEq, 20,"0=")
+_FFCDef(kFigZeroLt, 21,"0<")
+_FFCDef(kFigPlus, 22,"+")
+_FFCDef(kFigDPlus, 23,"d+")
 
 	// 24..29	******
-#define kFigMinus 24
-#define kFigDMinus 25
-#define kFigOver 26
-#define kFigSwap 27
-#define kFigDup 28
-#define kFigFetch 29
+_FFCDef(kFigMinus, 24,"minus")
+_FFCDef(kFigDMinus, 25,"dminus")
+_FFCDef(kFigOver, 26,"over")
+_FFCDef(kFigSwap, 27,"swap")
+_FFCDef(kFigDup, 28,"dup")
+_FFCDef(kFigFetch, 29,"@")
 
 	// 30..35	******
-#define kFigCFetch 30
-#define kFigCPling 31
-#define kFigPling 32
-#define kFigGetI 33
-#define kFigInc 34
-#define kFigNative 35
+_FFCDef(kFigCFetch, 30,"c@")
+_FFCDef(kFigCPling, 31,"c!")
+_FFCDef(kFigPling, 32,"!")
+_FFCDef(kFigGetI, 33,"i")
+_FFCDef(kFigInc, 34,"1+")
+_FFCDef(kFigNative, 35,"(native)")
 
 	// Special words for our version of Forth.
-#define kFigIntCFetch 36	// 36 - OK.
-#define kFigIntCStore 37	// 37 - OK.
-#define kFigIntFetch 38	// 38 - OK.
-#define kFigIntStore 39	// 39 - OK.
-#define kFigEmit 40		// 40 - OK.
-#define kFigDot 41		//41 - OK.
-#define kFigDotHex 42		// - OK.
-#define kFigKeyQ 43		// - OK.
-#define kFigKey 44		// - OK
-#define kFigAt 45			//45 - OK.
-#define kFigExit 46		// 46 - OK.
-#define kFigDec 47	// 47 - OK.
-#define kFigFill 48		// 48 - OK.
-#define kFigCls 49		// 49 - OK.
-#define kFigLsr 50
-#define kFigLsl 51
-#define kFigEdit 52
-#define kFigDskRd 53
-#define kFigDskWr 54
-#define kFigCMove 55
-#define kFigPlot 56
-#define kFigSpi 57
-#define kFigTrace 58
-#define kFigDumpDict 59
-#define kFigVarDoes 60
-#define kFigConstDoes 61
+_FFCDef(kFigIntCFetch, 36,"ic@")
+_FFCDef(kFigIntCStore, 37,"ic!")
+_FFCDef(kFigIntFetch, 38,"i@")
+_FFCDef(kFigIntStore, 39,"i!")
+_FFCDef(kFigEmit, 40	,"emit")
+// There is an official word definition for this.
+_FFCDef(kFigSFGet, 41,"l>")
+_FFCDef(kFigDotHex, 42,".hex")
+_FFCDef(kFigZero, 43,"0")
+_FFCDef(kFigLitC, 44,"(lit8)")
+_FFCDef(kFigAt, 45,"at")
+_FFCDef(kFigExit, 46	,";s")
+_FFCDef(kFigDec, 47,"1-")
+_FFCDef(kFigFill, 48	,"fill")
+_FFCDef(kFigSFPut, 49	,">l")
+_FFCDef(kFigLsr, 50,">>")
+_FFCDef(kFigLsl, 51,"<<")
+/* _FFCDef(kFigEdit, 52,"edit") */
+_FFCDef(kFigDskRd, 52,"blk>")
+_FFCDef(kFigDskWr, 53,">blk")
+_FFCDef(kFigCMove, 54,"cmove")
+_FFCDef(kFigPlot, 55,"plot")
+_FFCDef(kFigSpi, 56,"spi")
+_FFCDef(kFigTrace, 57,"(trace)")
+_FFCDef(kFigDumpDict, 58,"(ddump)")
+_FFCDef(kFigVarDoes, 59,"(vardoes)")
+_FFCDef(kFigConstDoes, 60,"(constdoes)")
 
-#define kFigByteCodes 62
+#define kFigByteCodes 61
 
 /**
  * For ROM testing.
@@ -87,4 +94,5 @@
 #define kFigLblRef 129		// label reference.
 #define kFigLblFRef 130	// forward relative reference.
 #define kFigLitWord 131 // Forces a literal.
+
 #endif
