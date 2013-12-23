@@ -85,6 +85,10 @@ INCDIR = inc/
 
 HEADERS := $(wildcard $(INCDIR)*.h)
 
+TOOLSDIR = Tools/
+TOOLS := $(addprefix $(TOOLSDIR), FFC SwapHex HexOrg T2E2)
+TSRCS := $(patsubst %, %.c, $(TOOLS))
+
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0x24:m
 LDSCRIPT = avr4.ld -Xlinker --defsym -Xlinker __stack=0x4ff
 LDSCRIPTHI = avr4Hi.ld -Xlinker --defsym -Xlinker __stack=0x4ff
@@ -142,7 +146,7 @@ $(OBJDIR)%.o : $(SRCDIR)%.c
 $(OBJDIR)%.o : $(SRCDIR)%.s
 	$(COMPILE) -D__VideoGenPAL__=1 -DFigVer=$(FIGVER) -DRamBase=0x8000 -x assembler-with-cpp -c $< -o $@
 
-$(SRCDIR)FigRom.s : $(SRCDIR)FigRom.fth
+$(SRCDIR)FigRom.s : $(SRCDIR)FigRom.fth Tools
 	Tools/FFC src/FigRom.fth src/FigRom.s -r FigRom.rel > FigRom.log
 
 $(OBJDIR)FigRom.o : $(SRCDIR)FigRom.s
@@ -173,13 +177,13 @@ load: all
 	bootloadHID main.hex
 
 clean:
-	rm -f *.hex *.elf $(ObjectsFromSRC)
+	rm -f *.hex *.elf $(ObjectsFromSRC) $(TOOLS) $(SRCDIR)FigRom.s $(NTSCDIR)Video.o FigRom.rel
 
 #  file targets
 FIGnitionPAL.elf: $(OBJECTS) $(HEADERS)
 	$(COMPILE) -T $(LDSCRIPT) -o FIGnitionPAL.elf $(OBJECTS)
 
-FIGnitionPAL.hex: FIGnitionPAL.elf
+FIGnitionPAL.hex: FIGnitionPAL.elf Tools
 	rm -f FIGnitionPAL.hex
 	avr-objcopy -j .text -j .fth -j .data -O ihex FIGnitionPAL.elf FIGnitionPALTmp.hex
 	Tools/SwapHex FIGnitionPALTmp.hex FigRom.rel -automin FIGnitionPAL.hex > SwapHex.log
@@ -187,15 +191,19 @@ FIGnitionPAL.hex: FIGnitionPAL.elf
 FIGnitionNTSC.elf: $(NTSCOBJECTS) $(HEADERS)
 	$(COMPILE) -T $(LDSCRIPT) -o FIGnitionNTSC.elf $(NTSCOBJECTS)
 
-FIGnitionNTSC.hex: FIGnitionNTSC.elf
+FIGnitionNTSC.hex: FIGnitionNTSC.elf Tools
 	rm -f FIGnitionNTSC.hex
 	avr-objcopy -j .text -j .fth -j .data -O ihex FIGnitionNTSC.elf FIGnitionNTSCTmp.hex
 	Tools/SwapHex FIGnitionNTSCTmp.hex FigRom.rel -automin FIGnitionNTSC.hex > SwapHex.log
 
 # Complete Distro
 Distro :
-	make $(FIGVER) FIGnitionPAL.hex
-	make $(FIGVER) FIGnitionNTSC.hex
+	make FIGVER=$(FIGVER) FIGnitionPAL.hex
+	make FIGVER=$(FIGVER) FIGnitionNTSC.hex
+
+Tools : $(TOOLS)
+
+all: FIGnitionPAL.hex FIGnitionNTSC.hex
 
 # Debug Targets
 FIGnitionDbg.elf: $(OBJECTSDEBUG) $(HEADERS)
