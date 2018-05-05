@@ -136,4 +136,21 @@ extern void TestSpiSignals(void);
 
 #endif
 
+typedef union {
+	byte b[2];
+	ushort s;
+	byte *p;
+} tBigEndianWord;
+
+typedef struct {
+	byte port;
+	byte portBit;
+	tBigEndianWord src;
+	tBigEndianWord srcLen;
+	tBigEndianWord dst;
+	tBigEndianWord dstLen;
+} tSpiStruct;
+
+extern void SpiDrv(tSpiStruct *spiInfo);
+
 #endif

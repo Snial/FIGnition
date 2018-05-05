@@ -42,10 +42,13 @@
 #include <avr/pgmspace.h>
 #include "CoreDefs.h"
 #include "Video.h"
-#include "FigKeyDrv.h"
+#include "FiggyPadDrv.h"
 #include "MicrochipSramSpi.h"
+#include "BootLoader.h"
 
 byte gFrameSyncState;
+
+#if 0
 
 void SyncInit(void)
 {
@@ -113,7 +116,10 @@ void SyncInit(void)
 	GTCCR = 0;	// Take timer 2 and 1 out of reset to start them.
 }
 
-const byte kChrSet[kChrSetBytesPerChar*kChrSetChrs] PROGMEM = {
+#endif
+
+// Did have PROGMEM instead of __attribute...
+const byte kChrSet[kChrSetBytesPerChar*kChrSetChrs]  __attribute__((section(".roData2"))) = {
 	// First 16 graphics are FIGnition logo graphics.
 	// 4 * quarter circles, then half horizontals
 	 /* tl */ 63, 127, 255, 255, 255, 255, 255, 255,
@@ -170,7 +176,7 @@ const byte kChrSet[kChrSetBytesPerChar*kChrSetChrs] PROGMEM = {
 	 /* @ */ 0x3e, 0x41, 0x9c, 0xac, 0x9f, 0x40, 0x3f, 0,
 	 /* p */ 0x00, 0x00, 0x8e, 0x95, 0x26, 0xc8, 0xf0, 0,
 	 
-	 /*   */ 0, 0, 0, 0, 0, 0, 0, 0,
+	 /*   */ 0, 0, 0, 0, 0, 0, 0, 0,	// Wobble test pattern 0x55,	0x55,	0x55,	0x55,	0x55,	0x55,	0x55,	0x55
 	 /* ! */ 0, 16, 16, 16, 16, 0, 16, 0,
 	 /* " */ 0, 36, 36, 0, 0, 0, 0, 0,
 	 /* # */ 0, 36, 126, 36, 36, 126, 36, 0,
@@ -277,9 +283,12 @@ byte gTestFrames=0;
 #endif
 
 volatile short gClock;
+volatile byte gScanRow;
 void SetLed(byte state);
 
 #define __SUPPORT_BM_MODE_
+#define __SUPPORT_FLKR_MODE
+//#define __DEBUG_AUDIO_BYTECOUNT
 
 ISR(__vector_11) // Timer1 comp A.
 {
@@ -315,10 +324,10 @@ ISR(__vector_11) // Timer1 comp A.
 		// finished video.
 		if(gScanRow==0) {	// if the scan row has been reset, we've finished.
 			//OCR1A += kFrameVideoMarginBottomScansPeriod+(kHSyncScan+1)-kFrameVideoMarginLeft;
-			if(gKeyHelpCount>=0) {
+			if(gSysVars.helpCount>=0) { // @TODO, the const is slightly different in actual R1.01.
 				OCR1A += kFrameVideoMarginBottomScansPeriod-kFrameVideoMarginLeft;
 			}
-			else
+			else	// @TODO, the const is slightly different in actual R1.01.
 				OCR1A += kFrameVideoMarginBottomScansPeriod-kFrameVideoMarginLeft-
 							kFrameKeyPromptScanPeriod-kFrameKeyPromptLeftmargin;
 #ifdef __SUPPORT_BM_MODE_
@@ -327,12 +336,13 @@ ISR(__vector_11) // Timer1 comp A.
 #endif
 			gFrameSyncState=kFrameSyncBotMargin;
 			gClock++;
-			asm volatile("call IndCCall");
-			asm volatile(".word KeyScan");
+			//asm volatile("call IndCCall");
+			//asm volatile(".word KeyScan");
+			asm volatile("call KeyScan");
 		}
 		else {
-			OCR1A += kHSyncScan+1-kFrameVideoMarginLeft;
-			gFrameSyncState=(byte)kFrameSyncScanLine;
+			OCR1A += kHSyncScan+1;
+			//gFrameSyncState=(byte)kFrameSyncScanGen;	//kFrameSyncScanLine;
 		}
 		return;
 	}
@@ -394,19 +404,22 @@ ISR(__vector_11) // Timer1 comp A.
 		else {
 #endif
 			gScanRow=0; // For test mode.
-			OCR1A += kFrameVideoMarginTopScansPeriod-(kHSyncScanShort+1)+(kHSyncPulse4us+1);
-			gFrameSyncState=(byte)kFrameSyncScanLine;
+			// @TODO, this constant is different in the actual R1.01 firmware.
+			OCR1A += kFrameVideoMarginTopScansPeriod-(kHSyncScanShort+1)+(kHSyncPulse4us+1)+kFrameVideoMarginLeft;
+			gFrameSyncState=(byte)kFrameSyncScanGen;	// kFrameSyncScanLine;
 #ifdef __SUPPORT_BM_MODE_
 		}
 		sei();
 #endif
-		asm volatile("call IndCCall");
-		asm volatile(".word KeyScan");
+		//asm volatile("call IndCCall");
+		//asm volatile(".word KeyScan");
+		asm volatile("call KeyScan");
 		break;
 	case kFrameSyncBMVideoPrefetch:	// Video Prefetch state for graphics mode.
 #ifdef __SUPPORT_BM_MODE_
-		OCR1A+=(kHSyncScan+1)*8; // the correct mode.
-		gFrameSyncState=(byte)kFrameSyncScanLine;
+		// @TODO, this constant is slight different in the R1.01 actual firmware.
+		OCR1A+=(kHSyncScan+1)*8+kFrameVideoMarginLeft; // the correct number of scans and margin indent.
+		gFrameSyncState=(byte)kFrameSyncScanGen;	//kFrameSyncScanLine;
 		PCMSK0|=(1<<PCINT1); // enable PCINT0 interrupt.
 		PCICR|=(1<<PCIE0); // enable PICINT7..0 interrupt.
 		PCIFR|=1; // cleaer any pending PCIF interrupt, not important yet.
@@ -418,6 +431,7 @@ ISR(__vector_11) // Timer1 comp A.
 		}
 		break;
 #endif
+#if 0
 	case kFrameSyncScanLine:
 #ifdef __SUPPORT_BM_MODE_
 		PCMSK0 &= ~(1<<PCINT1); // disable PCINT0 interrupt.		
@@ -432,11 +446,40 @@ ISR(__vector_11) // Timer1 comp A.
 		// SMCR|=(1<<SE);
 		sleep_cpu(); // we'll actually get re-interrupted here.
 		break;
+#endif
 	case kFrameSyncBotMargin:
 		// sync at beginning of pre equal pulse
 		OCR1A+=(kHSyncScan+1)-(kHSyncPulse4us+1);
 		gFrameSyncState=kFrameSyncPreEqualize;
 		break;
+#ifdef __SUPPORT_FLKR_MODE
+	case kFrameSyncTape:	//
+		OCR1A+=24;
+		gScanRow=gVideoBuff[599]>>2;
+		gFrameSyncState=kFrameSyncTape1;
+		break;
+	case kFrameSyncTape1: {
+			UCSR0B=(1<<TXEN0);
+			//gVideoBuff[598]=period;
+#ifdef __DEBUG_AUDIO_BYTECOUNT
+			UDR0=gVideoBuff[602]-gVideoBuff[608];
+#endif
+			OCR1A+=24+gScanRow;
+			gFrameSyncState=kFrameSyncTape2;
+		}
+		break;
+	case kFrameSyncTape2:
+		UCSR0B=0;
+		OCR1A+=(kHSyncScan+1)-gScanRow-48; // gVideoBuff[598]-32;
+		if((TIFR1&1)) {	// TOV1?
+			TIFR1|=1;	// clear TOV1 flag.
+			DDRB &=0xfe; // portB.0 needs to be input.
+			PIND = 0x80; // toggle (first take pull-up off if input mode.
+			DDRD ^=0x80; // toggle (to turn from input mode to output mode).
+		}
+		gFrameSyncState=kFrameSyncTape;
+		break;
+#endif
 	default: // bad!
 		break;
 	}
@@ -458,6 +501,7 @@ void VideoTestInit(byte ch,int offset)
 
 
 // UDGs repeat
+/*
 void VideoCopyUDGs(void)
 {
 	byte *dst=gUDGBase; // in RAM.
@@ -468,7 +512,7 @@ void VideoCopyUDGs(void)
 		dst++;
 	}
 }
-
+*/
 #ifdef _HWTEST_COMPOSITEOUTPUT
 
 void TestCompositeOutput(void)

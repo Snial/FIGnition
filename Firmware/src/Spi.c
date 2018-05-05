@@ -185,3 +185,26 @@ void TestSpiSignals(void)
 }
 
 #endif
+
+
+extern void VMWaitAndDisableRam(void);
+
+void SpiDrv(tSpiStruct *spiInfo)
+{	
+	//InterruptSpi();
+	VMWaitAndDisableRam();
+	*(byte*)spiInfo->port &= ~spiInfo->portBit; // take SPi low to start transaction.
+	ushort len=spiInfo->srcLen.s;
+	byte *ptr=spiInfo->src.p;
+	while( len>0) {
+		len--;
+		SpiMasterTransmit(*ptr++);
+	}
+	len=spiInfo->dstLen.s;
+	ptr=spiInfo->dst.p;
+	while(len>0) {
+		len--;
+		*ptr++=SpiMasterReadByte();
+	}
+	*(byte*)spiInfo->port |= spiInfo->portBit; // take SPi hi to end transaction.
+}

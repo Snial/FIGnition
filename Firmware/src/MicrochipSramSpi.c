@@ -59,6 +59,7 @@ void SramInit(void)
 
 }
 
+#if 0
 
 byte SramStatus(void)
 {
@@ -71,6 +72,7 @@ byte SramStatus(void)
 }
 
 
+
 void SramAbsWr(ushort addr, byte value)
 {
 	SramEnableCS();
@@ -80,6 +82,7 @@ void SramAbsWr(ushort addr, byte value)
 	SpiMasterTransmit(value); // finally the value.
 	SramDisableCS();
 }
+
 
 void SramAbsOpenWr(ushort addr, byte value)
 {
@@ -91,6 +94,8 @@ void SramAbsOpenWr(ushort addr, byte value)
 	SPDR=value; // start write (making it an open write, no waiting).
 	//SramDisableCS();
 }
+
+#endif
 
 void SramAbsBeginRd(ushort addr)
 {
@@ -106,7 +111,7 @@ void SramAbsBeginRd(ushort addr)
 	//return data;
 }
 
-/*
+#if 0
 byte SramAbsRd(ushort addr)
 {
 	byte data;
@@ -120,7 +125,7 @@ byte SramAbsRd(ushort addr)
 	return data;
 }
 
-*/
+#endif
 
 #ifdef __TESTSRAM__
 

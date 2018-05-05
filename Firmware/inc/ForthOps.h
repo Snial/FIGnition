@@ -8,6 +8,10 @@
 
 #endif
 
+/**
+ * 
+ **/
+
 // 0..5		******
 _FFCDef(kFigNext,0,"(nop)")
 _FFCDef(kFigLit,1,"(lit16)")
@@ -41,8 +45,8 @@ _FFCDef(kFigPlus, 22,"+")
 _FFCDef(kFigDPlus, 23,"d+")
 
 	// 24..29	******
-_FFCDef(kFigMinus, 24,"minus")
-_FFCDef(kFigDMinus, 25,"dminus")
+_FFCDef(kFigMinus, 24,"neg")
+_FFCDef(kFigDMinus, 25,"dneg")
 _FFCDef(kFigOver, 26,"over")
 _FFCDef(kFigSwap, 27,"swap")
 _FFCDef(kFigDup, 28,"dup")
@@ -75,8 +79,8 @@ _FFCDef(kFigSFPut, 49	,">l")
 _FFCDef(kFigLsr, 50,">>")
 _FFCDef(kFigLsl, 51,"<<")
 /* _FFCDef(kFigEdit, 52,"edit") */
-_FFCDef(kFigDskRd, 52,"blk>")
-_FFCDef(kFigDskWr, 53,">blk")
+_FFCDef(kFigSerialFlashReadBlock, 52,"SerFlashRdBlk")
+_FFCDef(kFigSerialFlashWriteBlock, 53,"SerFlashWrBlk")
 _FFCDef(kFigCMove, 54,"cmove")
 _FFCDef(kFigPlot, 55,"plot")
 _FFCDef(kFigSpi, 56,"spi")
@@ -84,8 +88,21 @@ _FFCDef(kFigTrace, 57,"(trace)")
 _FFCDef(kFigDumpDict, 58,"(ddump)")
 _FFCDef(kFigVarDoes, 59,"(vardoes)")
 _FFCDef(kFigConstDoes, 60,"(constdoes)")
+_FFCDef(kFigTile, 61,"tile")
+_FFCDef(kFigBlt, 62,"blt")
+_FFCDef(kFig2Blt, 63,"2blt")
+_FFCDef(kFigBlts, 64,"blts")
+_FFCDef(kFigClip, 65,"clip")
+_FFCDef(kFigOpSub, 66,"-")
+_FFCDef(kFigSerialFlashEraseSector, 67,"SerFlashErSec")
+_FFCDef(kFigSerialFlashID, 68,"SerFlashID")
+_FFCDef(kFigDFetch, 69,"d@")
+_FFCDef(kFigDStore, 70,"d!")
+_FFCDef(kFigDConstDoes, 71,"(dconstdoes)")
+_FFCDef(kFig2Over, 72,"2over")
+_FFCDef(kFig2Swap, 73,"2swap")
 
-#define kFigByteCodes 61
+#define kFigByteCodes 74
 
 /**
  * For ROM testing.

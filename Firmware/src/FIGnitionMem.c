@@ -61,6 +61,7 @@ byte gReadMemLogging=0; // disabled by default.
 
 #endif
 
+#if 0
 void InterruptSpi()
 {
 	SramDisableCS();
@@ -73,6 +74,8 @@ void InterruptSpi()
 	}while(qTimeout-(short)TCNT1>=0);
 	SPCR |= (1<<SPE); // enable the SPI in the same mode. (restart?)
 }
+
+#endif
 
 #if 0
 
@@ -145,6 +148,7 @@ byte _FnReadMem(ushort addr)
  * Can't write to ROM.
  * PostCond: need to invalidate gRamCache to restart reads.
  **/
+#if 0
 void WriteMem(ushort addr, byte *data, ushort len)
 {
 	if(len==0)
@@ -218,6 +222,7 @@ void WriteMem(ushort addr, byte *data, ushort len)
 	// Need to restart reading though.
 	SramFlush();
 }
+#endif
 
 //tMemXFerBuff gMemXFerBuff2;
 

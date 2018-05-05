@@ -59,9 +59,10 @@
 // of nybbles which index a graphic character array and by using RLE for
 // space characters. The image would then take <87.5b + a 16b array +
 // Spaces: 11n=>2n, 10n=>2n, 7n=>2n, 23n=>4n, 17n=>3n. Saving: 9+8+19+14, 25b. 
+#if 0
 #define kStartupImageWidth  25
 #define kStartupImageHeight 7
-const byte kStartupImage[kStartupImageHeight][kStartupImageWidth] PROGMEM = {
+const byte kStartupImage[kStartupImageHeight][kStartupImageWidth] __attribute__((section(".roData2"))) = {
 
 	{ 16,  5,  5, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,  5, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32 },
 	{ 132, 132, 132, 6, 7, 132, 132, 132, 132, 132, 132, 132, 6, 132, 132, 132, 132, 7, 132, 132, 132, 132, 132, 132, 132 },
@@ -72,7 +73,26 @@ const byte kStartupImage[kStartupImageHeight][kStartupImageWidth] PROGMEM = {
 	{ 32, 32, 32, 32, 32, 32, 160, 3, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32}
 
 };
+#else
 
+const byte kStartupImage[] __attribute__((section(".roData2"))) = {
+
+	
+	3, 			16,  5,  5,
+	14,	1,		5,
+	11,	4*25,
+			132, 132, 132, 6, 7, 132, 132, 132, 132, 132, 132, 132, 6, 132, 132, 132, 132, 7, 132, 132, 132, 132, 132, 132, 132 ,
+			160, 32, 32, 21, 149, 0, 160, 1, 21, 160, 160, 1, 21, 149, 160, 32, 21, 149, 0, 160, 1, 21, 160, 160, 1,
+			160, 32, 32, 21, 149, 160, 32, 160, 21, 149, 32, 160, 21, 149, 160, 32, 21, 149, 160, 32, 160, 21, 149, 32, 160,
+			160, 32, 32, 21, 149, 2, 160, 160, 21, 149, 32, 160, 21, 149, 2, 160, 21, 149, 2, 160, 3, 21, 149, 32, 160 ,
+	4*25+7 , 1,	160 , 
+	24 , 2, 160, 3 ,
+	0 ,
+};
+
+#endif
+
+/*
 void StartupScreen(void)
 {
 	//byte ox=(kVideoBuffWidth-kStartupImageWidth)/2;
@@ -94,5 +114,6 @@ void StartupScreen(void)
 	while(timeout-gClock>0)
 		;
 }
+*/
 
 #endif

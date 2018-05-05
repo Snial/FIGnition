@@ -48,7 +48,7 @@
 #define kStartupImageWidth  25
 #define kStartupImageHeight 7
 
-extern const byte kStartupImage[kStartupImageHeight][kStartupImageWidth] PROGMEM;
+extern const byte kStartupImage[] PROGMEM;
 
 extern void StartupScreen(void);
 

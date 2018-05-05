@@ -46,10 +46,14 @@
 
 #include "LLDebug.h"
 
+#if 0
+
 void SetLed(byte state)
 {
 	kLedPort = (kLedPort&~kLedPin) | (state? kLedPin:0);
 }
+
+#endif
 
 /*
 byte EepromGetB(const byte* addr)

@@ -53,7 +53,7 @@ tSysVars gSysVars;
 
 #ifdef __KEYPAD8KEY__
 
-#include "FigKeyDrv.h"
+#include "FiggyPadDrv.h"
 
 #endif
 
@@ -71,6 +71,8 @@ extern ushort gIndCCallRet,gIndCCallVec;
 
 #endif
 
+#if 0
+
 byte KeyHeart()
 {
 	byte ch;
@@ -78,6 +80,7 @@ byte KeyHeart()
 		SetLed((gClock>>4)&1);
 	return ch;
 }
+#endif
 
 #include "Spi.h"
 
@@ -86,20 +89,12 @@ byte KeyHeart()
 #include "AmicFlashSpi.h"
 
 #include "VMTest.h"
-//#include "ForthOps.h"
 
 #include "FIGnitionMem.h"
 
 #include "ForthDebug.h"
 
-/**
- * Editor Support.
- **/
-//#include "FigEdit.h"
-#include "FigVFlash.h"
-
 #define __TESTHSCANVARS__
-#include "StartScreen.h"
 
 void FignitionInit(void)
 {
@@ -158,7 +153,7 @@ void FignitionInit(void)
 	//PutHex(ASSR);
 	
 	//SwUartPutCh('U');
-	VideoCopyUDGs(); // Generate UDGs.
+	//VideoCopyUDGs(); // Generate UDGs.
 	//SwUartPutCh('v');
 	VideoTestInit(32,0); // Create video image.
 	//SwUartPutCh('S');
@@ -166,10 +161,9 @@ void FignitionInit(void)
 	KeyInit();	// init the keyboard.
 	SpiMasterInit();
 	SramInit();
-	gSysFlags=0;
 	PCMSK0=0;
 	PCICR=0;
-	SyncInit(); // Start the video.
+	//SyncInit(); // Start the video.
 	//Cls();
 	TestVideo();
 
@@ -180,7 +174,7 @@ void FignitionInit(void)
 	//TestKeyPadRaw();	// polling test of keypad.
 	
 	TestFullRAM();
-	StartupScreen();
+	//StartupScreen();
 
 #if __TESTROM__
 	TestForth();
@@ -196,6 +190,6 @@ void FignitionInit(void)
 void main(void)
 {
 	FignitionInit();	
-	Cls();
+	//Cls();
 	VM();
 }

@@ -40,12 +40,14 @@
 
 	.data
 
+#if 0
 .global gScanRow
 
 ;gFrameSyncState:
 ;	.byte 0
 gScanRow:
 	.byte 0
+#endif
 
 ;this is currently copied from blinky.c
 #if F_CPU == 20000000
@@ -105,6 +107,19 @@ scanCount = 17
 
 //#define _DEBUG_BM_SAVEGIP
 
+;#define _CPUSYNC_CORE_
+;#define _CPUSYNC_0_
+;#define _CPUSYNC_1_
+;#define _CPUSYNC_2_
+;#define _CPUSYNC_3_
+;#define _CPUSYNC_4_
+;#define _CPUSYNC_5_
+;#define _CPUSYNC_6_
+;#define _CPUSYNC_7_
+;#define _CPUSYNC_8_
+;
+#define _CPUSYNCB_
+#define _CPUSYNCB2_
 
 VideoScan:
 	push r0
@@ -116,6 +131,143 @@ VideoScan:
 	push xh
 	push yl
 	push yh	;It's gIP.
+	
+#ifdef _CPUSYNC_CORE_
+	ldi yl,lo8(TCNT1L)
+	ldi yh,hi8(TCNT1L)
+	ld xl,y	; for sync purposes only need bottom 8 bits.
+	inc xl	;sync+0. next timer value.
+	nop
+VideoScanSync00:
+	ld xh,y	;sync+1 and sync+2, sync+6 and sync+7
+	cp xl,xh		;sync+3
+	brne VideoScanSync00	;sync+4 and sync+5
+#endif
+	;Timing possibilities. Pl condition occurs
+	;when phase 0 happens on ldxh2(third).
+	;Phase:	Just After			Core loops	mi condition	VideoScanSync80 Cycle.
+	;0		ldxl2				0			0 loops.		13
+	;1		inc xl				0			1 loop			21
+	;2		ldxh1				0			2 loops.		29
+	;3		ldxh2				1			6 loops.		69	;	10 19 28 37 46 55 64
+	;4		cpxl				1			7 loops.		77	;9 18 27 36 45 54 63 72
+	;5		brne1				1			0 loops			13
+	;6		brne2				1			1 loop			21	;7 16
+	;7		ldxh1(second)		1			2 loops.		29	;
+
+	;Timing possibilities #2. Pl condition occurs
+	;when phase 0 happens on ldxh2(third).
+	;Phase:	Just After			Core loops	mi condition	VideoScanSync80 Cycle.
+	;0		ldxl2				0			0 loops.		13
+	;1		inc xl				0			1 loop			21
+	;2		nop					0			2 loops.		29
+	;3		ldxh1				0			3 loops.		29
+	;4		ldxh2				1			6 loops.		69	;	10 19 28 37 46 55 64
+	;5		cpxl				1			7 loops.		77	;9 18 27 36 45 54 63 72
+	;6		brne1				1			0 loops			13
+	;7		brne2				1			1 loop			21	;7 16
+	;8		ldxh1(second)		1			2 loops.		29	;
+
+#ifdef _CPUSYNC_0_
+VideoScanSync10:
+	dec r16
+	inc xl	;sync+0. next timer value.
+	ld xh,y	;sync+1 and sync+2, sync+6 and sync+7
+	nop
+	nop
+	cp xl,xh		;sync+3
+	brpl VideoScanSync10	;sync+4 and sync+5
+#endif
+
+#ifdef _CPUSYNC_8_
+VideoScanSync80:
+	add xl,r16	;add the sync offset.
+	ld xh,y	; for sync purposes only need bottom 8 bits.
+VideoScanSync90:
+	ld xh,y	;sync+1 and sync+2, sync+6 and sync+7
+	cp xl,xh		;sync+3
+	brne VideoScanSync90	;sync+4 and sync+5
+	;Finally video is completely sync'd!
+#endif	
+	
+#ifdef _CPUSYNCB_
+	ldi zl,lo8(TCNT1L)
+	ldi zh,hi8(TCNT1L)
+				;	Test cycles	TCNT1CycleAtExit		:1	Total cycles.
+	ld r0,z		;0:0		8		17+8 = 25 = 3:1		0	25
+	ld r1,z		;0:2		10		15+10 = 25 = 3:1	0	25
+	ld yl,z		;0:4		9		13+9 = 22 = 2:6		3	25
+	ld yh,z		;0:6		9		11+9 = 20 = 2:4		5	25
+	inc r0
+	ld r16,z 	;+9			9		8+9 = 17 = 2:1		0	17
+	ld xl,z		;+11		8		6+8 = 14 = 1:6		3	17
+	ld xh,z		;+13		8		4+8 = 12 = 1:4		5	17
+	ld zl,z		;+15		7		2+7= 9 = 1:1		0	9
+	;17c so far. To synchronize, the 
+	;so we want the path lengths to be the same, 7 cycles longer for +0
+	;and 0 cycles longer for +7.
+	cp yl,r0	;if it changed in 0..3 then we need an extra 4 cycles
+	breq VideoScanSync10	;It changed in +1, +2, +3 or +4.
+	;it didn't change in +0 to +4. are the same. Could have changed in +5 to +7.
+	cp yh,r0	;Is it the same from +0 to +6?
+	breq VideoScanSync20	;No, then it changed in +5 or +6.
+	cp zl,r0	;Is +7 different?
+	brne VideoScanSyncDone7	;Yes.
+	;All of +0 to +7 are the same, it's the +0 case.
+	rjmp VideoScanSyncDone0	;+0 case.
+VideoScanSync10:	;it changed between 0..3
+	cp r1,r0		;did it change between 0 and 2?
+	breq VideoScanSync14	;+2 is different so it changed in +1 or +2
+	cp xl,r0	;did it change between 0 and 3?
+	brne VideoScanSyncDone3	;yes, +3 case, need to add 4 cycles vs +0 case.
+	;+4 case need to add 3 cycles.
+	rjmp VideoScanSyncDone4	; it's the +4 case.
+VideoScanSync20:	;it changed between +5 or +6.
+	cp xh,r0	;Is +0 case and +5 case the same.
+	brne VideoScanSyncDone5	;no, it changed in +5.
+	rjmp VideoScanSyncDone6	;yes, it changed in +6.
+VideoScanSync14:
+	cp r16,r0	;Did it change in +2?
+	brne VideoScanSyncDone1	;+1 case was different.
+	rjmp VideoScanSyncDone2	;+2 case was different.
+
+VideoScanSyncDone6:
+VideoScanSyncDone5:
+	rjmp VideoScanSyncDone4	;2 extra cycles, 5 in total.
+VideoScanSyncDone4:
+VideoScanSyncDone3:
+	nop				;3 extra cycles.
+	rjmp VideoScanSyncDone1
+VideoScanSyncDone1:	;0 extra cycles.
+VideoScanSyncDone7:	;0 extra cycles.
+VideoScanSyncDone2:	;0 extra cycles.
+VideoScanSyncDone0:	;0 extra cycles.
+#endif
+
+#ifdef _CPUSYNCB2_
+VideoScanSyncDone:
+	lds r16,OCR1AL	;
+	;Final calculation. From OCR1L match, we have:
+	;OtherIntLatency?? + 4 cycles for Int. Then rjmp vector int (3c) + 21 to vector to int
+	;+9*2 (regs pushed) + 2 cycles to init z + max 29c for CpuSync + 5c for first wait.
+	;=82c max+ other Int Latency. = 4.1us. So, if we allow Other Int latency to be:
+	;5c for ins + 4c for Int + jmp (3c) + sei (1c) = 13c. This gives:
+	;=101c. 12.625TCNT1 cycles. If we round to 14 this gives an extra 11c space.
+	;14c is a shift of 28 pixels (3 chars).
+	;The old code allowed for a margin of 18c, so here we save 4/2.5 = 1.6us
+	;That takes scantime Forth execution from 8.86us to 10.46us, 18% faster
+	;= 16.34% performance = 2%!
+	subi r16,kScanSyncAdjust
+VideoScanSyncDone90:
+	lds xl,TCNT1L
+	rjmp VideoScanSyncDone91
+VideoScanSyncDone91:
+	nop
+	cp xl,r16
+	brmi VideoScanSyncDone90
+
+#endif
+
 	lds yh,gScanRow
 	cpi yh,kFrameVideoScans
 	brsh VideoScanPrompt
@@ -187,19 +339,15 @@ VideoScanPrompt:
 	;zl needs to point to the Character ROM scan.
 	;GetPgmByte(gKeyCode[gShiftState][gKeyGroup][0]);
 	;So, it's gKeyCode+gShiftState*64+gKeyGroup*+scan.
-	lds zl,gShiftState
-	sbrc zl,0
-	ldi zl,64	;start at offset 64 if shiftstate=1.
-	lds zh,gKeyGroup
-	lsl zh
-	lsl zh
-	lsl zh	;*8
-	add zl,zh
+	lds zh,gKeyGroup	;contains the shift state too.
+	ldi xl,9
+	mul zh,xl
+	mov zl,r0	;
 	ldi zh,0
 	sbrc yh,3	;bit 3 set? if so we're on the second row.
 	subi zl,-4	;for next row.
-	ldi xl,lo8(gKeyCode)
-	ldi xh,hi8(gKeyCode)
+	ldi xl,lo8(gKeyCode+1)	;+1 to skip past the single key codes.
+	ldi xh,hi8(gKeyCode+1)
 	add xl,zl
 	adc xh,zh	;x^char list.
 	ldi zl,lo8(kChrSet)
@@ -215,7 +363,7 @@ VideoScanPrompt:
 VideoScanPrompt01:
 	movw z,x	;From ROM.
 	lpm r16,z	;r16=char, 3c.
-	cpi r16,32
+	cpi r16,16
 	brsh VideoScanPrompt02
 	ldi r16,32
 VideoScanPrompt02:
@@ -260,8 +408,8 @@ VideoScanEnd1a:
 	subi yh,-1	;next video scan row (add 1).
 	cpi yh,kFrameVideoScans
 	brlo VideoScanEnd2
-	lds zh,gKeyHelpCount
-	sbrs zh,7	;Don't reset if gKeyHelpCount<0
+	lds zh,gSysVars_helpCount
+	sbrs zh,7	;Don't reset if gSysVars_helpCount<0
 VideoScanEnd1b:
 	ldi yh,0	;done.
 VideoScanEnd2:
@@ -307,7 +455,7 @@ VideoScan99:
  * at all. We need to check if the flag is active
  * (PCIFR<0> =1) or if gSysVars+12 isnt -1.
  **/
-#define VideoBitMapAbsBase (0x9380-160)
+#define VideoBitMapAbsBase (0xf380-160)
 #define kVideoBMBuffWidth 20
 
 VideoBMScan:
@@ -367,7 +515,7 @@ VideoBMScan20:
 
 	VMSeqWaitRam r16		;otherwise, wait for RAM to finish (SPIF needs to be read)
 
-	sbic gSysFlagsIO,2	;If SPIF had been clear, then it's because we've already read it
+	sbis gSysFlagsIO,2	;If SPIF had been clear, then it's because we've already read it
 						;in the user code. so we need to make sure it's clear here.
 	
 	in r16,SPDR	;clear SPIF.
@@ -528,7 +676,7 @@ gDebugBmListPCs:	// 1 byte var.
 
 #endif
 
-#define kBMVideoBase 0x1380
+#define kBMVideoBase 0x7380
 ;#define _DEBUG_BM_MULTIPLECALLS
 ;#define _DEBUG_BM_SYSFLAGS
 
@@ -824,8 +972,8 @@ VideoScanEnd1:
 	subi yl,-1	;next video scan row (add 1).
 	cpi yl,kFrameVideoScans
 	brlo VideoScanEnd2
-	lds zh,gKeyHelpCount
-	sbrs zh,7	;Don't reset if gKeyHelpCount<0
+	lds zh,gSysVars_helpCount
+	sbrs zh,7	;Don't reset if gSysVars_helpCount<0
 VideoScanEnd1b:
 	ldi yl,0	;done.
 VideoScanEnd2:

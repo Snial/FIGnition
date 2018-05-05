@@ -1,0 +1,273 @@
+>T2E2Token
+Whi:[,0,104]>FoundCR:0<Tok:[hex]Whi:[ ,3,99]>FoundCR:0<Tok:[create]Whi:[ ,10,99]>FoundCR:0<Tok:[cat]Whi:[ ,14,40]>FoundCR:0<Tok:[(]Rem:[ 4x3)]Whi:[,21,10]>FoundCR:1< $$$ Whi:[  ,22,48]>FoundCR:0<Tok:[0001]Whi:[ ,28,44]>FoundCR:0<Tok:[,]Whi:[ ,30,48]>FoundCR:0<Tok:[0202]Whi:[ ,35,44]>FoundCR:0<Tok:[,]Whi:[,37,10]>FoundCR:1< $$$ Whi:[  ,38,48]>FoundCR:0<Tok:[0202]Whi:[ ,44,44]>FoundCR:0<Tok:[,]Whi:[ ,46,48]>FoundCR:0<Tok:[0272]Whi:[ ,51,44]>FoundCR:0<Tok:[,]Whi:[,53,10]>FoundCR:1< $$$ Whi:[  ,54,70]>FoundCR:0<Tok:[FF00]Whi:[ ,60,44]>FoundCR:0<Tok:[,]Whi:[ ,62,48]>FoundCR:0<Tok:[0001]Whi:[ ,67,44]>FoundCR:0<Tok:[,]Whi:[,69,10]>FoundCR:1< $$$ Whi:[  ,70,50]>FoundCR:0<Tok:[2000]Whi:[ ,76,44]>FoundCR:0<Tok:[,]Whi:[ ,78,48]>FoundCR:0<Tok:[0001]Whi:[ ,83,44]>FoundCR:0<Tok:[,]Whi:[,85,10]>FoundCR:1< $$$ Whi:[  ,86,48]>FoundCR:0<Tok:[0FF00]Whi:[ ,93,44]>FoundCR:0<Tok:[,]Whi:[ ,95,48]>FoundCR:0<Tok:[0020]Whi:[ ,100,44]>FoundCR:0<Tok:[,]Whi:[,102,10]>FoundCR:1< $$$ Whi:[  ,103,48]>FoundCR:0<Tok:[0032]Whi:[ ,109,44]>FoundCR:0<Tok:[,]Whi:[ ,111,52]>FoundCR:0<Tok:[4844]Whi:[ ,116,44]>FoundCR:0<Tok:[,]Whi:[,118,10]>FoundCR:1< $$$ Whi:[  ,119,56]>FoundCR:0<Tok:[8040]Whi:[ ,125,44]>FoundCR:0<Tok:[,]Whi:[ ,127,50]>FoundCR:0<Tok:[2020]Whi:[ ,132,44]>FoundCR:0<Tok:[,]Whi:[,134,10]>FoundCR:1< $$$ Whi:[  ,135,50]>FoundCR:0<Tok:[202C]Whi:[ ,141,44]>FoundCR:0<Tok:[,]Whi:[ ,143,51]>FoundCR:0<Tok:[3222]Whi:[ ,148,44]>FoundCR:0<Tok:[,]Whi:[,150,10]>FoundCR:1< $$$ Whi:[  ,151,57]>FoundCR:0<Tok:[9EC6]Whi:[ ,157,44]>FoundCR:0<Tok:[,]Whi:[ ,159,51]>FoundCR:0<Tok:[3A0E]Whi:[ ,164,44]>FoundCR:0<Tok:[,]Whi:[,166,10]>FoundCR:1< $$$ Whi:[  ,167,48]>FoundCR:0<Tok:[0202]Whi:[ ,173,44]>FoundCR:0<Tok:[,]Whi:[ ,175,48]>FoundCR:0<Tok:[060F]Whi:[ ,180,44]>FoundCR:0<Tok:[,]Whi:[,182,10]>FoundCR:1< $$$ Whi:[  ,183,48]>FoundCR:0<Tok:[0800]Whi:[ ,189,44]>FoundCR:0<Tok:[,]Whi:[ ,191,48]>FoundCR:0<Tok:[0240]Whi:[ ,196,44]>FoundCR:0<Tok:[,]Whi:[,198,10]>FoundCR:1< $$$ Whi:[  ,199,48]>FoundCR:0<Tok:[0000]Whi:[ ,205,44]>FoundCR:0<Tok:[,]Whi:[ ,207,49]>FoundCR:0<Tok:[1000]Whi:[ ,212,44]>FoundCR:0<Tok:[,]Whi:[,214,10]>FoundCR:1< $$$ Whi:[  ,215,52]>FoundCR:0<Tok:[4340]Whi:[ ,221,44]>FoundCR:0<Tok:[,]Whi:[ ,223,56]>FoundCR:0<Tok:[848C]Whi:[ ,228,44]>FoundCR:0<Tok:[,]Whi:[,230,10]>FoundCR:1< $$$ Whi:[  ,231,56]>FoundCR:0<Tok:[8084]Whi:[ ,237,44]>FoundCR:0<Tok:[,]Whi:[ ,239,52]>FoundCR:0<Tok:[4720]Whi:[ ,244,44]>FoundCR:0<Tok:[,]Whi:[,246,10]>FoundCR:1< $$$ Whi:[  ,247,67]>FoundCR:0<Tok:[C202]Whi:[ ,253,44]>FoundCR:0<Tok:[,]Whi:[ ,255,48]>FoundCR:0<Tok:[0959]Whi:[ ,260,44]>FoundCR:0<Tok:[,]Whi:[,262,10]>FoundCR:1< $$$ Whi:[  ,263,48]>FoundCR:0<Tok:[0191]Whi:[ ,269,44]>FoundCR:0<Tok:[,]Whi:[ ,271,70]>FoundCR:0<Tok:[F204]Whi:[ ,276,44]>FoundCR:0<Tok:[,]Whi:[,278,10]>FoundCR:1< $$$ Whi:[  ,279,49]>FoundCR:0<Tok:[1112]Whi:[ ,285,44]>FoundCR:0<Tok:[,]Whi:[ ,287,49]>FoundCR:0<Tok:[1C00]Whi:[ ,292,44]>FoundCR:0<Tok:[,]Whi:[,294,10]>FoundCR:1< $$$ Whi:[  ,295,48]>FoundCR:0<Tok:[0000]Whi:[ ,301,44]>FoundCR:0<Tok:[,]Whi:[ ,303,48]>FoundCR:0<Tok:[0000]Whi:[ ,308,44]>FoundCR:0<Tok:[,]Whi:[,310,10]>FoundCR:1< $$$ Whi:[  ,311,70]>FoundCR:0<Tok:[FF48]Whi:[ ,317,44]>FoundCR:0<Tok:[,]Whi:[ ,319,51]>FoundCR:0<Tok:[3800]Whi:[ ,324,44]>FoundCR:0<Tok:[,]Whi:[,326,10]>FoundCR:1< $$$ Whi:[  ,327,48]>FoundCR:0<Tok:[0000]Whi:[ ,333,44]>FoundCR:0<Tok:[,]Whi:[ ,335,48]>FoundCR:0<Tok:[0000]Whi:[ ,340,44]>FoundCR:0<Tok:[,]Whi:[,342,10]>FoundCR:1< $$$ Whi:[  ,343,70]>FoundCR:0<Tok:[FF25]Whi:[ ,349,44]>FoundCR:0<Tok:[,]Whi:[ ,351,49]>FoundCR:0<Tok:[1C00]Whi:[ ,356,44]>FoundCR:0<Tok:[,]Whi:[,358,10]>FoundCR:1< $$$ Whi:[  ,359,48]>FoundCR:0<Tok:[0000]Whi:[ ,365,44]>FoundCR:0<Tok:[,]Whi:[ ,367,48]>FoundCR:0<Tok:[0000]Whi:[ ,372,44]>FoundCR:0<Tok:[,]Whi:[,374,10]>FoundCR:1< $$$ Whi:[  ,375,70]>FoundCR:0<Tok:[F820]Whi:[ ,381,44]>FoundCR:0<Tok:[,]Whi:[ ,383,69]>FoundCR:0<Tok:[E000]Whi:[ ,388,44]>FoundCR:0<Tok:[,]Whi:[,390,10]>FoundCR:1< $$$ Whi:[  ,391,48]>FoundCR:0<Tok:[0000]Whi:[ ,397,44]>FoundCR:0<Tok:[,]Whi:[ ,399,48]>FoundCR:0<Tok:[0000]Whi:[ ,404,44]>FoundCR:0<Tok:[,]Whi:[,406,10]>FoundCR:1< $$$ Whi:[  ,407,10]>FoundCR:1<Whi:[,410,100]>FoundCR:0<Tok:[decimal]Whi:[,417,10]>FoundCR:1< $$$ Whi:[,418,10]>FoundCR:1<Whi:[,419,58]>FoundCR:0<Tok:[:]Whi:[ ,420,62]>FoundCR:0<Tok:[>udg]Whi:[ ,425,40]>FoundCR:0<Tok:[(]Rem:[ addr udg --)]Whi:[,440,10]>FoundCR:1<Whi:[  ,441,56]>FoundCR:0<Tok:[8]Whi:[ ,444,42]>FoundCR:0<Tok:[*]Whi:[ ,446,118]>FoundCR:0<Tok:[vram]Whi:[ ,451,43]>FoundCR:0<Tok:[+]Whi:[ ,453,54]>FoundCR:0<Tok:[600]Whi:[ ,457,43]>FoundCR:0<Tok:[+]Whi:[ ,459,56]>FoundCR:0<Tok:[8]Whi:[,461,10]>FoundCR:1<Whi:[  ,462,99]>FoundCR:0<Tok:[cmove]Whi:[ ,469,59]>FoundCR:0<Tok:[;]Whi:[,471,10]>FoundCR:1< $$$ Whi:[,472,12]>FoundCR:0< PBreak  PBreak2 Tok:[]
+[BlitDemo00.hex]
+Block Contents:
+"hex create cat ( 4x3)
+  0001 , 0202 ,
+  0202 , 0272 ,
+  FF00 , 0001 ,
+  2000 , 0001 ,
+  0FF00 , 0020 ,
+  0032 , 4844 ,
+  8040 , 2020 ,
+  202C , 3222 ,
+  9EC6 , 3A0E ,
+  0202 , 060F ,
+  0800 , 0240 ,
+  0000 , 1000 ,
+  4340 , 848C ,
+  8084 , 4720 ,
+  C202 , 0959 ,
+  0191 , F204 ,
+  1112 , 1C00 ,
+  0000 , 0000 ,
+  FF48 , 3800 ,
+  0000 , 0000 ,
+  FF25 , 1C00 ,
+  0000 , 0000 ,
+  F820 , E000 ,
+  0000 , 0000 ,
+  
+decimal
+
+: >udg ( addr udg --)
+  8 * vram + 600 + 8
+  cmove ;
+"
+#h#e#x# #c#r#e#a#t#e# #c#a#t# #(| 16
+>EndIHexLine: <EndIHexLine
+# #4#x#3#)#0d# # #0#0#0#1# #,# #0| 32
+>EndIHexLine: <EndIHexLine
+#2#0#2# #,#0d# # #0#2#0#2# #,# #0| 48
+>EndIHexLine: <EndIHexLine
+#2#7#2# #,#0d# # #F#F#0#0# #,# #0| 64
+>EndIHexLine: <EndIHexLine
+#0#0#1# #,#0d# # #2#0#0#0# #,# #0| 80
+>EndIHexLine: <EndIHexLine
+#0#0#1# #,#0d# # #0#F#F#0#0# #,# | 96
+>EndIHexLine: <EndIHexLine
+#0#0#2#0# #,#0d# # #0#0#3#2# #,# | 112
+>EndIHexLine: <EndIHexLine
+#4#8#4#4# #,#0d# # #8#0#4#0# #,# | 128
+>EndIHexLine: <EndIHexLine
+#2#0#2#0# #,#0d# # #2#0#2#C# #,# | 144
+>EndIHexLine: <EndIHexLine
+#3#2#2#2# #,#0d# # #9#E#C#6# #,# | 160
+>EndIHexLine: <EndIHexLine
+#3#A#0#E# #,#0d# # #0#2#0#2# #,# | 176
+>EndIHexLine: <EndIHexLine
+#0#6#0#F# #,#0d# # #0#8#0#0# #,# | 192
+>EndIHexLine: <EndIHexLine
+#0#2#4#0# #,#0d# # #0#0#0#0# #,# | 208
+>EndIHexLine: <EndIHexLine
+#1#0#0#0# #,#0d# # #4#3#4#0# #,# | 224
+>EndIHexLine: <EndIHexLine
+#8#4#8#C# #,#0d# # #8#0#8#4# #,# | 240
+>EndIHexLine: <EndIHexLine
+#4#7#2#0# #,#0d# # #C#2#0#2# #,# | 256
+>EndIHexLine: <EndIHexLine
+#0#9#5#9# #,#0d# # #0#1#9#1# #,# | 272
+>EndIHexLine: <EndIHexLine
+#F#2#0#4# #,#0d# # #1#1#1#2# #,# | 288
+>EndIHexLine: <EndIHexLine
+#1#C#0#0# #,#0d# # #0#0#0#0# #,# | 304
+>EndIHexLine: <EndIHexLine
+#0#0#0#0# #,#0d# # #F#F#4#8# #,# | 320
+>EndIHexLine: <EndIHexLine
+#3#8#0#0# #,#0d# # #0#0#0#0# #,# | 336
+>EndIHexLine: <EndIHexLine
+#0#0#0#0# #,#0d# # #F#F#2#5# #,# | 352
+>EndIHexLine: <EndIHexLine
+#1#C#0#0# #,#0d# # #0#0#0#0# #,# | 368
+>EndIHexLine: <EndIHexLine
+#0#0#0#0# #,#0d# # #F#8#2#0# #,# | 384
+>EndIHexLine: <EndIHexLine
+#E#0#0#0# #,#0d# # #0#0#0#0# #,# | 400
+>EndIHexLine: <EndIHexLine
+#0#0#0#0# #,#0d# # #0d#d#e#c#i#m#a| 416
+>EndIHexLine: <EndIHexLine
+#l#0d#0d#:# #>#u#d#g# #(# #a#d#d#r| 432
+>EndIHexLine: <EndIHexLine
+# #u#d#g# #-#-#)#0d# # #8# #*# #v| 448
+>EndIHexLine: <EndIHexLine
+#r#a#m# #+# #6#0#0# #+# #8#0d# # | 464
+>EndIHexLine: <EndIHexLine
+#c#m#o#v#e# #;#00>EndIHexLine: <EndIHexLine
+Whi:[,0,10]>FoundCR:1<Whi:[,0,104]>FoundCR:0<Tok:[hex]Whi:[ ,3,99]>FoundCR:0<Tok:[create]Whi:[ ,10,116]>FoundCR:0<Tok:[trail]Whi:[,16,10]>FoundCR:1< $$$ Whi:[  ,17,48]>FoundCR:0<Tok:[044A]Whi:[ ,23,44]>FoundCR:0<Tok:[,]Whi:[ ,25,48]>FoundCR:0<Tok:[0A440]Whi:[ ,31,44]>FoundCR:0<Tok:[,]Whi:[,33,10]>FoundCR:1< $$$ Whi:[  ,34,48]>FoundCR:0<Tok:[044A]Whi:[ ,40,44]>FoundCR:0<Tok:[,]Whi:[ ,42,48]>FoundCR:0<Tok:[0A440]Whi:[ ,48,44]>FoundCR:0<Tok:[,]Whi:[,50,10]>FoundCR:1< $$$ Whi:[,51,10]>FoundCR:1<Whi:[,52,99]>FoundCR:0<Tok:[create]Whi:[ ,58,103]>FoundCR:0<Tok:[greybg]Whi:[,65,10]>FoundCR:1< $$$ Whi:[  ,66,53]>FoundCR:0<Tok:[55AA]Whi:[ ,72,44]>FoundCR:0<Tok:[,]Whi:[ ,74,48]>FoundCR:0<Tok:[0AA55]Whi:[ ,80,44]>FoundCR:0<Tok:[,]Whi:[,82,10]>FoundCR:1< $$$ Whi:[  ,83,53]>FoundCR:0<Tok:[55AA]Whi:[ ,89,44]>FoundCR:0<Tok:[,]Whi:[ ,91,48]>FoundCR:0<Tok:[0AA55]Whi:[ ,97,44]>FoundCR:0<Tok:[,]Whi:[,99,10]>FoundCR:1< $$$ Whi:[,100,10]>FoundCR:1<Whi:[,101,99]>FoundCR:0<Tok:[create]Whi:[ ,107,116]>FoundCR:0<Tok:[twinkle0]Whi:[,116,10]>FoundCR:1< $$$ Whi:[  ,117,48]>FoundCR:0<Tok:[0808]Whi:[ ,123,44]>FoundCR:0<Tok:[,]Whi:[ ,125,48]>FoundCR:0<Tok:[00D6]Whi:[ ,130,44]>FoundCR:0<Tok:[,]Whi:[,132,10]>FoundCR:1< $$$ Whi:[  ,133,48]>FoundCR:0<Tok:[0008]Whi:[ ,139,44]>FoundCR:0<Tok:[,]Whi:[ ,141,48]>FoundCR:0<Tok:[0800]Whi:[ ,146,44]>FoundCR:0<Tok:[,]Whi:[,148,10]>FoundCR:1< $$$ Whi:[,149,10]>FoundCR:1<Whi:[,150,99]>FoundCR:0<Tok:[create]Whi:[ ,156,116]>FoundCR:0<Tok:[twinkle1]Whi:[,165,10]>FoundCR:1< $$$ Whi:[  ,166,56]>FoundCR:0<Tok:[8244]Whi:[ ,172,44]>FoundCR:0<Tok:[,]Whi:[ ,174,48]>FoundCR:0<Tok:[0010]Whi:[ ,179,44]>FoundCR:0<Tok:[,]Whi:[,181,10]>FoundCR:1< $$$ Whi:[  ,182,48]>FoundCR:0<Tok:[0044]Whi:[ ,188,44]>FoundCR:0<Tok:[,]Whi:[ ,190,56]>FoundCR:0<Tok:[8200]Whi:[ ,195,44]>FoundCR:0<Tok:[,]Whi:[,197,10]>FoundCR:1< $$$ Whi:[,198,10]>FoundCR:1<Whi:[,199,99]>FoundCR:0<Tok:[create]Whi:[ ,205,116]>FoundCR:0<Tok:[twinkle2]Whi:[,214,10]>FoundCR:1< $$$ Whi:[  ,215,48]>FoundCR:0<Tok:[0000]Whi:[ ,221,44]>FoundCR:0<Tok:[,]Whi:[ ,223,49]>FoundCR:0<Tok:[1028]Whi:[ ,228,44]>FoundCR:0<Tok:[,]Whi:[,230,10]>FoundCR:1< $$$ Whi:[  ,231,49]>FoundCR:0<Tok:[1000]Whi:[ ,237,44]>FoundCR:0<Tok:[,]Whi:[ ,239,48]>FoundCR:0<Tok:[0000]Whi:[ ,244,44]>FoundCR:0<Tok:[,]Whi:[,246,10]>FoundCR:1< $$$ Whi:[,247,10]>FoundCR:1<Whi:[,248,99]>FoundCR:0<Tok:[create]Whi:[ ,254,116]>FoundCR:0<Tok:[twinkle3]Whi:[,263,10]>FoundCR:1< $$$ Whi:[  ,264,49]>FoundCR:0<Tok:[1044]Whi:[ ,270,44]>FoundCR:0<Tok:[,]Whi:[ ,272,48]>FoundCR:0<Tok:[0082]Whi:[ ,277,44]>FoundCR:0<Tok:[,]Whi:[,279,10]>FoundCR:1< $$$ Whi:[  ,280,48]>FoundCR:0<Tok:[0044]Whi:[ ,286,44]>FoundCR:0<Tok:[,]Whi:[ ,288,49]>FoundCR:0<Tok:[1000]Whi:[ ,293,44]>FoundCR:0<Tok:[,]Whi:[,295,10]>FoundCR:1< $$$ Whi:[,296,10]>FoundCR:1<Whi:[,297,100]>FoundCR:0<Tok:[decimal]Whi:[,304,10]>FoundCR:1< $$$ Whi:[,305,10]>FoundCR:1<Whi:[,306,58]>FoundCR:0<Tok:[:]Whi:[ ,307,98]>FoundCR:0<Tok:[bltt1]Whi:[,313,10]>FoundCR:1<Whi:[  ,314,99]>FoundCR:0<Tok:[cr]Whi:[ ,318,50]>FoundCR:0<Tok:[256]Whi:[ ,322,51]>FoundCR:0<Tok:[3]Whi:[ ,324,48]>FoundCR:0<Tok:[0]Whi:[ ,326,100]>FoundCR:0<Tok:[do]Whi:[ ,329,52]>FoundCR:0<Tok:[4]Whi:[ ,331,48]>FoundCR:0<Tok:[0]Whi:[ ,333,100]>FoundCR:0<Tok:[do]Whi:[,336,10]>FoundCR:1<Whi:[    ,337,100]>FoundCR:0<Tok:[dup]Whi:[ ,344,101]>FoundCR:0<Tok:[emit]Whi:[ ,349,49]>FoundCR:0<Tok:[1+]Whi:[,352,10]>FoundCR:1<Whi:[  ,353,108]>FoundCR:0<Tok:[loop]Whi:[ ,359,99]>FoundCR:0<Tok:[cr]Whi:[ ,362,108]>FoundCR:0<Tok:[loop]Whi:[ ,367,100]>FoundCR:0<Tok:[drop]Whi:[,372,10]>FoundCR:1<Whi:[  ,373,116]>FoundCR:0<Tok:[trail]Whi:[ ,380,48]>FoundCR:0<Tok:[0]Whi:[ ,382,62]>FoundCR:0<Tok:[>udg]Whi:[,387,10]>FoundCR:1<Whi:[  ,388,103]>FoundCR:0<Tok:[greybg]Whi:[ ,396,49]>FoundCR:0<Tok:[1]Whi:[ ,398,62]>FoundCR:0<Tok:[>udg]Whi:[,403,10]>FoundCR:1<Whi:[  ,404,116]>FoundCR:0<Tok:[twinkle0]Whi:[ ,414,50]>FoundCR:0<Tok:[2]Whi:[ ,416,62]>FoundCR:0<Tok:[>udg]Whi:[,421,10]>FoundCR:1<Whi:[  ,422,116]>FoundCR:0<Tok:[twinkle1]Whi:[ ,432,51]>FoundCR:0<Tok:[3]Whi:[ ,434,62]>FoundCR:0<Tok:[>udg]Whi:[,439,10]>FoundCR:1<Whi:[  ,440,116]>FoundCR:0<Tok:[twinkle2]Whi:[ ,450,52]>FoundCR:0<Tok:[4]Whi:[ ,452,62]>FoundCR:0<Tok:[>udg]Whi:[,457,10]>FoundCR:1<Whi:[  ,458,116]>FoundCR:0<Tok:[twinkle3]Whi:[ ,468,53]>FoundCR:0<Tok:[5]Whi:[ ,470,62]>FoundCR:0<Tok:[>udg]Whi:[,475,10]>FoundCR:1<Whi:[,476,59]>FoundCR:0<Tok:[;]Whi:[,477,10]>FoundCR:1< $$$ Whi:[,478,12]>FoundCR:0< PBreak  PBreak2 Tok:[]
+[BlitDemo01.hex]
+Block Contents:
+"hex create trail
+  044A , 0A440 ,
+  044A , 0A440 ,
+
+create greybg
+  55AA , 0AA55 ,
+  55AA , 0AA55 ,
+
+create twinkle0
+  0808 , 00D6 ,
+  0008 , 0800 ,
+
+create twinkle1
+  8244 , 0010 ,
+  0044 , 8200 ,
+
+create twinkle2
+  0000 , 1028 ,
+  1000 , 0000 ,
+
+create twinkle3
+  1044 , 0082 ,
+  0044 , 1000 ,
+
+decimal
+
+: bltt1
+  cr 256 3 0 do 4 0 do
+    dup emit 1+
+  loop cr loop drop
+  trail 0 >udg
+  greybg 1 >udg
+  twinkle0 2 >udg
+  twinkle1 3 >udg
+  twinkle2 4 >udg
+  twinkle3 5 >udg
+;
+"
+#h#e#x# #c#r#e#a#t#e# #t#r#a#i#l| 16
+>EndIHexLine: <EndIHexLine
+#0d# # #0#4#4#A# #,# #0#A#4#4#0# | 32
+>EndIHexLine: <EndIHexLine
+#,#0d# # #0#4#4#A# #,# #0#A#4#4#0| 48
+>EndIHexLine: <EndIHexLine
+# #,#0d#0d#c#r#e#a#t#e# #g#r#e#y#b| 64
+>EndIHexLine: <EndIHexLine
+#g#0d# # #5#5#A#A# #,# #0#A#A#5#5| 80
+>EndIHexLine: <EndIHexLine
+# #,#0d# # #5#5#A#A# #,# #0#A#A#5| 96
+>EndIHexLine: <EndIHexLine
+#5# #,#0d#0d#c#r#e#a#t#e# #t#w#i#n| 112
+>EndIHexLine: <EndIHexLine
+#k#l#e#0#0d# # #0#8#0#8# #,# #0#0| 128
+>EndIHexLine: <EndIHexLine
+#D#6# #,#0d# # #0#0#0#8# #,# #0#8| 144
+>EndIHexLine: <EndIHexLine
+#0#0# #,#0d#0d#c#r#e#a#t#e# #t#w#i| 160
+>EndIHexLine: <EndIHexLine
+#n#k#l#e#1#0d# # #8#2#4#4# #,# #0| 176
+>EndIHexLine: <EndIHexLine
+#0#1#0# #,#0d# # #0#0#4#4# #,# #8| 192
+>EndIHexLine: <EndIHexLine
+#2#0#0# #,#0d#0d#c#r#e#a#t#e# #t#w| 208
+>EndIHexLine: <EndIHexLine
+#i#n#k#l#e#2#0d# # #0#0#0#0# #,# | 224
+>EndIHexLine: <EndIHexLine
+#1#0#2#8# #,#0d# # #1#0#0#0# #,# | 240
+>EndIHexLine: <EndIHexLine
+#0#0#0#0# #,#0d#0d#c#r#e#a#t#e# #t| 256
+>EndIHexLine: <EndIHexLine
+#w#i#n#k#l#e#3#0d# # #1#0#4#4# #,| 272
+>EndIHexLine: <EndIHexLine
+# #0#0#8#2# #,#0d# # #0#0#4#4# #,| 288
+>EndIHexLine: <EndIHexLine
+# #1#0#0#0# #,#0d#0d#d#e#c#i#m#a#l| 304
+>EndIHexLine: <EndIHexLine
+#0d#0d#:# #b#l#t#t#1#0d# # #c#r# #2| 320
+>EndIHexLine: <EndIHexLine
+#5#6# #3# #0# #d#o# #4# #0# #d#o| 336
+>EndIHexLine: <EndIHexLine
+#0d# # # # #d#u#p# #e#m#i#t# #1#+| 352
+>EndIHexLine: <EndIHexLine
+#0d# # #l#o#o#p# #c#r# #l#o#o#p# | 368
+>EndIHexLine: <EndIHexLine
+#d#r#o#p#0d# # #t#r#a#i#l# #0# #>| 384
+>EndIHexLine: <EndIHexLine
+#u#d#g#0d# # #g#r#e#y#b#g# #1# #>| 400
+>EndIHexLine: <EndIHexLine
+#u#d#g#0d# # #t#w#i#n#k#l#e#0# #2| 416
+>EndIHexLine: <EndIHexLine
+# #>#u#d#g#0d# # #t#w#i#n#k#l#e#1| 432
+>EndIHexLine: <EndIHexLine
+# #3# #>#u#d#g#0d# # #t#w#i#n#k#l| 448
+>EndIHexLine: <EndIHexLine
+#e#2# #4# #>#u#d#g#0d# # #t#w#i#n| 464
+>EndIHexLine: <EndIHexLine
+#k#l#e#3# #5# #>#u#d#g#0d#;#00>EndIHexLine: <EndIHexLine
+Whi:[,0,10]>FoundCR:1<Whi:[,0,58]>FoundCR:0<Tok:[:]Whi:[ ,1,99]>FoundCR:0<Tok:[clg]Whi:[,5,10]>FoundCR:1<Whi:[  ,6,45]>FoundCR:0<Tok:[-3200]Whi:[ ,13,51]>FoundCR:0<Tok:[3200]Whi:[ ,18,48]>FoundCR:0<Tok:[0]Whi:[ ,20,102]>FoundCR:0<Tok:[fill]Whi:[,25,10]>FoundCR:1<Whi:[,26,59]>FoundCR:0<Tok:[;]Whi:[,27,10]>FoundCR:1< $$$ Whi:[,28,10]>FoundCR:1<Whi:[,29,58]>FoundCR:0<Tok:[:]Whi:[ ,30,103]>FoundCR:0<Tok:[gat]Whi:[ ,34,40]>FoundCR:0<Tok:[(]Rem:[ x y -- addr)]Whi:[,49,10]>FoundCR:1<Whi:[  ,50,50]>FoundCR:0<Tok:[20]Whi:[ ,54,42]>FoundCR:0<Tok:[*]Whi:[ ,56,43]>FoundCR:0<Tok:[+]Whi:[ ,58,56]>FoundCR:0<Tok:[8]Whi:[ ,60,42]>FoundCR:0<Tok:[*]Whi:[ ,62,45]>FoundCR:0<Tok:[-3200]Whi:[ ,68,43]>FoundCR:0<Tok:[+]Whi:[,70,10]>FoundCR:1<Whi:[,71,59]>FoundCR:0<Tok:[;]Whi:[,72,10]>FoundCR:1< $$$ Whi:[,73,10]>FoundCR:1<Whi:[,74,58]>FoundCR:0<Tok:[:]Whi:[ ,75,103]>FoundCR:0<Tok:[gemit]Whi:[ ,81,40]>FoundCR:0<Tok:[(]Rem:[ addr bm --)]Whi:[,95,10]>FoundCR:1<Whi:[  ,96,111]>FoundCR:0<Tok:[over]Whi:[ ,102,56]>FoundCR:0<Tok:[8]Whi:[ ,104,99]>FoundCR:0<Tok:[cmove]Whi:[ ,110,56]>FoundCR:0<Tok:[8]Whi:[ ,112,43]>FoundCR:0<Tok:[+]Whi:[,114,10]>FoundCR:1<Whi:[,115,59]>FoundCR:0<Tok:[;]Whi:[ ,116,40]>FoundCR:0<Tok:[(]Rem:[ addr')]Whi:[,125,10]>FoundCR:1< $$$ Whi:[,126,10]>FoundCR:1<Whi:[,127,58]>FoundCR:0<Tok:[:]Whi:[ ,128,98]>FoundCR:0<Tok:[blitt2]Whi:[,135,10]>FoundCR:1<Whi:[  ,136,49]>FoundCR:0<Tok:[1]Whi:[ ,139,118]>FoundCR:0<Tok:[vmode]Whi:[ ,145,99]>FoundCR:0<Tok:[clg]Whi:[,149,10]>FoundCR:1<Whi:[  ,150,48]>FoundCR:0<Tok:[0]Whi:[ ,153,48]>FoundCR:0<Tok:[0]Whi:[ ,155,103]>FoundCR:0<Tok:[gat]Whi:[ ,159,116]>FoundCR:0<Tok:[trail]Whi:[ ,165,103]>FoundCR:0<Tok:[gemit]Whi:[,171,10]>FoundCR:1<Whi:[  ,172,103]>FoundCR:0<Tok:[greybg]Whi:[ ,180,103]>FoundCR:0<Tok:[gemit]Whi:[,186,10]>FoundCR:1<Whi:[  ,187,116]>FoundCR:0<Tok:[twinkle0]Whi:[ ,197,103]>FoundCR:0<Tok:[gemit]Whi:[,203,10]>FoundCR:1<Whi:[  ,204,116]>FoundCR:0<Tok:[twinkle1]Whi:[ ,214,103]>FoundCR:0<Tok:[gemit]Whi:[,220,10]>FoundCR:1<Whi:[  ,221,116]>FoundCR:0<Tok:[twinkle2]Whi:[ ,231,103]>FoundCR:0<Tok:[gemit]Whi:[,237,10]>FoundCR:1<Whi:[  ,238,116]>FoundCR:0<Tok:[twinkle3]Whi:[ ,248,103]>FoundCR:0<Tok:[gemit]Whi:[,254,10]>FoundCR:1<Whi:[  ,255,99]>FoundCR:0<Tok:[cat]Whi:[,260,10]>FoundCR:1<Whi:[  ,261,56]>FoundCR:0<Tok:[8]Whi:[ ,264,53]>FoundCR:0<Tok:[5]Whi:[ ,266,100]>FoundCR:0<Tok:[do]Whi:[,269,10]>FoundCR:1<Whi:[    ,270,49]>FoundCR:0<Tok:[12]Whi:[ ,276,56]>FoundCR:0<Tok:[8]Whi:[ ,278,100]>FoundCR:0<Tok:[do]Whi:[,281,10]>FoundCR:1<Whi:[      ,282,105]>FoundCR:0<Tok:[i]Whi:[ ,289,114]>FoundCR:0<Tok:[r]Whi:[ ,291,103]>FoundCR:0<Tok:[gat]Whi:[,295,10]>FoundCR:1<Whi:[      ,296,111]>FoundCR:0<Tok:[over]Whi:[ ,306,103]>FoundCR:0<Tok:[gemit]Whi:[ ,312,56]>FoundCR:0<Tok:[8+]Whi:[,315,10]>FoundCR:1<Whi:[    ,316,108]>FoundCR:0<Tok:[loop]Whi:[,324,10]>FoundCR:1<Whi:[  ,325,108]>FoundCR:0<Tok:[loop]Whi:[ ,331,100]>FoundCR:0<Tok:[drop]Whi:[,336,10]>FoundCR:1<Whi:[  ,337,107]>FoundCR:0<Tok:[key]Whi:[ ,342,100]>FoundCR:0<Tok:[drop]Whi:[ ,347,48]>FoundCR:0<Tok:[0]Whi:[ ,349,118]>FoundCR:0<Tok:[vmode]Whi:[,355,10]>FoundCR:1<Whi:[,356,59]>FoundCR:0<Tok:[;]Whi:[,357,10]>FoundCR:1< $$$ Whi:[,358,0]>FoundCR:0<Tok:[]
+[BlitDemo02.hex]
+Block Contents:
+": clg
+  -3200 3200 0 fill
+;
+
+: gat ( x y -- addr)
+  20 * + 8 * -3200 +
+;
+
+: gemit ( addr bm --)
+  over 8 cmove 8 +
+; ( addr')
+
+: blitt2
+  1 vmode clg
+  0 0 gat trail gemit
+  greybg gemit
+  twinkle0 gemit
+  twinkle1 gemit
+  twinkle2 gemit
+  twinkle3 gemit
+  cat
+  8 5 do
+    12 8 do
+      i r gat
+      over gemit 8+
+    loop
+  loop drop
+  key drop 0 vmode
+;
+"
+#:# #c#l#g#0d# # #-#3#2#0#0# #3#2| 16
+>EndIHexLine: <EndIHexLine
+#0#0# #0# #f#i#l#l#0d#;#0d#0d#:# #g| 32
+>EndIHexLine: <EndIHexLine
+#a#t# #(# #x# #y# #-#-# #a#d#d#r| 48
+>EndIHexLine: <EndIHexLine
+#)#0d# # #2#0# #*# #+# #8# #*# #-| 64
+>EndIHexLine: <EndIHexLine
+#3#2#0#0# #+#0d#;#0d#0d#:# #g#e#m#i| 80
+>EndIHexLine: <EndIHexLine
+#t# #(# #a#d#d#r# #b#m# #-#-#)#0d| 96
+>EndIHexLine: <EndIHexLine
+# # #o#v#e#r# #8# #c#m#o#v#e# #8| 112
+>EndIHexLine: <EndIHexLine
+# #+#0d#;# #(# #a#d#d#r#'#)#0d#0d#:| 128
+>EndIHexLine: <EndIHexLine
+# #b#l#i#t#t#2#0d# # #1# #v#m#o#d| 144
+>EndIHexLine: <EndIHexLine
+#e# #c#l#g#0d# # #0# #0# #g#a#t# | 160
+>EndIHexLine: <EndIHexLine
+#t#r#a#i#l# #g#e#m#i#t#0d# # #g#r| 176
+>EndIHexLine: <EndIHexLine
+#e#y#b#g# #g#e#m#i#t#0d# # #t#w#i| 192
+>EndIHexLine: <EndIHexLine
+#n#k#l#e#0# #g#e#m#i#t#0d# # #t#w| 208
+>EndIHexLine: <EndIHexLine
+#i#n#k#l#e#1# #g#e#m#i#t#0d# # #t| 224
+>EndIHexLine: <EndIHexLine
+#w#i#n#k#l#e#2# #g#e#m#i#t#0d# # | 240
+>EndIHexLine: <EndIHexLine
+#t#w#i#n#k#l#e#3# #g#e#m#i#t#0d# | 256
+>EndIHexLine: <EndIHexLine
+# #c#a#t#0d# # #8# #5# #d#o#0d# # | 272
+>EndIHexLine: <EndIHexLine
+# # #1#2# #8# #d#o#0d# # # # # # | 288
+>EndIHexLine: <EndIHexLine
+#i# #r# #g#a#t#0d# # # # # # #o#v| 304
+>EndIHexLine: <EndIHexLine
+#e#r# #g#e#m#i#t# #8#+#0d# # # # | 320
+>EndIHexLine: <EndIHexLine
+#l#o#o#p#0d# # #l#o#o#p# #d#r#o#p| 336
+>EndIHexLine: <EndIHexLine
+#0d# # #k#e#y# #d#r#o#p# #0# #v#m| 352
+>EndIHexLine: <EndIHexLine
+#o#d#e#0d#;#00>EndIHexLine: <EndIHexLine

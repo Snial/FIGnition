@@ -1,0 +1,305 @@
+KeyScanArg=srcIntFix/FiggyPadDrv.s
+Arg=src/FiggyPadDrv.s
+>IntWrapPass.
+0 .file "FiggyPadDrv.c"
+1 __SREG__ =
+2 __SP_H__ =
+3 __SP_L__ =
+4 __CCP__ =
+5 __tmp_reg__ =
+6 __zero_reg__ =
+7 .global __do_copy_data
+8 .global __do_clear_bss
+9 .text __do_clear_bss
+10 .global Log2
+11 .type Log2,
+12 Log2: Log2,In Proc: Log2>GetProcRec>ProcFind<ProcFind 0, found=0
+ GetProcRec1 GetProcRec2 GetProcRec3<GetProcRec
+13 /* prologue:
+14 /* frame
+15 /* stack
+16 .L__stack_usage =>ModRegsFor<ModRegsFor 0
+17 mov r25,r24>ModRegsFor<ModRegsFor 2000000
+18 andi r25,lo8(-16)>ModRegsFor<ModRegsFor 2000000
+19 breq .L6>ModRegsFor<ModRegsFor 0
+20 /* #APP
+21 ; 182>ModRegsFor<ModRegsFor 0
+22 swap r24>ModRegsFor<ModRegsFor 1000000
+23 ; 0>ModRegsFor<ModRegsFor 0
+24 /* #NOAPP
+25 ldi r25,lo8(4)>ModRegsFor<ModRegsFor 2000000
+26 rjmp .L2>ModRegsFor<ModRegsFor 0
+27 .L6: .L2>ModRegsFor<ModRegsFor 0
+28 ldi r25,lo8(0)>ModRegsFor<ModRegsFor 2000000
+29 .L2: r25,lo8(0)>ModRegsFor<ModRegsFor 0
+30 sbrs r24,2>ModRegsFor<ModRegsFor 0
+31 rjmp .L3>ModRegsFor<ModRegsFor 0
+32 ori r25,lo8(2)>ModRegsFor<ModRegsFor 2000000
+33 rjmp .L4>ModRegsFor<ModRegsFor 0
+34 .L3: .L4>ModRegsFor<ModRegsFor 0
+35 sbrc r24,1>ModRegsFor<ModRegsFor 0
+36 ori r25,lo8(1)>ModRegsFor<ModRegsFor 2000000
+37 .L4: r25,lo8(1)>ModRegsFor<ModRegsFor 0
+38 sbrc r24,3>ModRegsFor<ModRegsFor 0
+39 ori r25,lo8(3)>ModRegsFor<ModRegsFor 2000000
+40 .L5: r25,lo8(3)>ModRegsFor<ModRegsFor 0
+41 mov r24,r25>ModRegsFor<ModRegsFor 1000000
+42 /* epilogue
+43 ret epilogue DoneProc: Log2, ok=0, bad=3000000
+44 .size Log2,
+45 .global IndexKey
+46 .type IndexKey,
+47 IndexKey: IndexKey,In Proc: IndexKey>GetProcRec>ProcFind<ProcFind 0, found=0
+ GetProcRec1 GetProcRec2 GetProcRec3<GetProcRec
+48 /* prologue:
+49 /* frame
+50 /* stack
+51 .L__stack_usage =>ModRegsFor<ModRegsFor 0
+52 ldi r25,lo8(0)>ModRegsFor<ModRegsFor 2000000
+53 movw r30,r24>ModRegsFor<ModRegsFor ffffffffc0000000
+54 ldi r18,3>ModRegsFor<ModRegsFor 40000
+55 1: lsl>ModRegsFor<ModRegsFor 0
+56 rol r31>ModRegsFor<ModRegsFor ffffffff80000000
+57 dec r18>ModRegsFor<ModRegsFor 40000
+58 brne 1b>ModRegsFor<ModRegsFor 0
+59 add r30,r24>ModRegsFor<ModRegsFor 40000000
+60 adc r31,r25>ModRegsFor<ModRegsFor ffffffff80000000
+61 add r30,r22>ModRegsFor<ModRegsFor 40000000
+62 adc r31,__zero_reg__>ModRegsFor<ModRegsFor ffffffff80000000
+63 subi r30,lo8(-(gKeyCode))>ModRegsFor<ModRegsFor 40000000
+64 sbci r31,hi8(-(gKeyCode))>ModRegsFor<ModRegsFor ffffffff80000000
+65 /* #APP
+66 ; 196>ModRegsFor<ModRegsFor 0
+67 lpm r24,>ModRegsFor<ModRegsFor 1000000
+68 lpm r24,>ModRegsFor<ModRegsFor 1000000
+69 ; 0>ModRegsFor<ModRegsFor 0
+70 /* epilogue
+71 /* #NOAPP
+72 ret #NOAPP DoneProc: IndexKey, ok=0, bad=ffffffffc3040000
+73 .size IndexKey,
+74 .global IntKey
+75 .type IntKey,
+76 IntKey: IntKey,In Proc: IntKey>GetProcRec>ProcFind<ProcFind 0, found=0
+ GetProcRec1 GetProcRec2 GetProcRec3<GetProcRec
+77 push r28 Push RMask=10000000
+78 push r29 Push RMask=20000000
+79 /* prologue:
+80 /* frame
+81 /* stack
+82 .L__stack_usage =>ModRegsFor<ModRegsFor 0
+83 lds r29,gKeyState>ModRegsFor<ModRegsFor 20000000
+84 lds r28,gKeyGroup>ModRegsFor<ModRegsFor 10000000
+85 lds r25,gSysVars+11>ModRegsFor<ModRegsFor 2000000
+86 cp r24,r25>ModRegsFor<ModRegsFor 0
+87 brne .L9>ModRegsFor<ModRegsFor 0
+88 lds r18,gSysVars+28>ModRegsFor<ModRegsFor 40000
+89 mov r24,r29>ModRegsFor<ModRegsFor 1000000
+90 ldi r25,lo8(0)>ModRegsFor<ModRegsFor 2000000
+91 andi r24,lo8(3)>ModRegsFor<ModRegsFor 1000000
+92 andi r25,hi8(3)>ModRegsFor<ModRegsFor 2000000
+93 cpi r24,2>ModRegsFor<ModRegsFor 0
+94 cpc r25,__zero_reg__>ModRegsFor<ModRegsFor 0
+95 brlt .L10>ModRegsFor<ModRegsFor 0
+96 sbrs r18,7>ModRegsFor<ModRegsFor 0
+97 rjmp .L25>ModRegsFor<ModRegsFor 0
+98 .L10: .L25>ModRegsFor<ModRegsFor 0
+99 cpi r29,lo8(1)>ModRegsFor<ModRegsFor 0
+100 brne .L11>ModRegsFor<ModRegsFor 0
+101 cpi r18,lo8(6)>ModRegsFor<ModRegsFor 0
+102 brlt .L12>ModRegsFor<ModRegsFor 0
+103 .L25: .L12>ModRegsFor<ModRegsFor 0
+104 subi r18,lo8(-(-1))>ModRegsFor<ModRegsFor 40000
+105 rjmp .L11>ModRegsFor<ModRegsFor 0
+106 .L12: .L11>ModRegsFor<ModRegsFor 0
+107 ldi r24,lo8(5)>ModRegsFor<ModRegsFor 1000000
+108 sts gKeyState,r24>ModRegsFor<ModRegsFor 0
+109 ldi r18,lo8(6)>ModRegsFor<ModRegsFor 40000
+110 .L11: r18,lo8(6)>ModRegsFor<ModRegsFor 0
+111 sts gSysVars+28,r18>ModRegsFor<ModRegsFor 0
+112 rjmp .L8>ModRegsFor<ModRegsFor 0
+113 .L9: .L8>ModRegsFor<ModRegsFor 0
+114 sts gSysVars+11,r24>ModRegsFor<ModRegsFor 0
+115 cpi r29,lo8(1)>ModRegsFor<ModRegsFor 0
+116 breq .L16>ModRegsFor<ModRegsFor 0
+117 cpi r29,lo8(1)>ModRegsFor<ModRegsFor 0
+118 brlo .L15>ModRegsFor<ModRegsFor 0
+119 cpi r29,lo8(2)>ModRegsFor<ModRegsFor 0
+120 breq .L17>ModRegsFor<ModRegsFor 0
+121 cpi r29,lo8(3)>ModRegsFor<ModRegsFor 0
+122 brne .L14>ModRegsFor<ModRegsFor 0
+123 rjmp .L26>ModRegsFor<ModRegsFor 0
+124 .L16: .L26>ModRegsFor<ModRegsFor 0
+125 tst r24>ModRegsFor<ModRegsFor 0
+126 breq .L20>ModRegsFor<ModRegsFor 0
+127 .L15: .L20>ModRegsFor<ModRegsFor 0
+128 call Log2>ProcFind<ProcFind 2076195200, found=1
+ Call/RCall New Bads 3000000
+129 andi r28,lo8(-8)>ModRegsFor<ModRegsFor 10000000
+130 or r28,r24>ModRegsFor<ModRegsFor 10000000
+131 subi r29,lo8(-(2))>ModRegsFor<ModRegsFor 20000000
+132 rjmp .L14>ModRegsFor<ModRegsFor 0
+133 .L17: .L14>ModRegsFor<ModRegsFor 0
+134 tst r24>ModRegsFor<ModRegsFor 0
+135 brne .L19>ModRegsFor<ModRegsFor 0
+136 lds r24,gSysVars+28>ModRegsFor<ModRegsFor 1000000
+137 sbrc r24,7>ModRegsFor<ModRegsFor 0
+138 rjmp .L20>ModRegsFor<ModRegsFor 0
+139 mov r24,r28>ModRegsFor<ModRegsFor 1000000
+140 andi r24,lo8(7)>ModRegsFor<ModRegsFor 1000000
+141 cpi r24,lo8(4)>ModRegsFor<ModRegsFor 0
+142 brne .L21>ModRegsFor<ModRegsFor 0
+143 ldi r24,lo8(8)>ModRegsFor<ModRegsFor 1000000
+144 eor r28,r24>ModRegsFor<ModRegsFor 10000000
+145 rjmp .L20>ModRegsFor<ModRegsFor 0
+146 .L21: .L20>ModRegsFor<ModRegsFor 0
+147 mov r24,r28>ModRegsFor<ModRegsFor 1000000
+148 ldi r22,lo8(0)>ModRegsFor<ModRegsFor 400000
+149 call IndexKey>ProcFind<ProcFind 2076195296, found=1
+ Call/RCall New Bads ffffffffc3040000
+150 sts gSysVars+27,r24>ModRegsFor<ModRegsFor 0
+151 ldi r28,lo8(0)>ModRegsFor<ModRegsFor 10000000
+152 ldi r29,lo8(4)>ModRegsFor<ModRegsFor 20000000
+153 rjmp .L14>ModRegsFor<ModRegsFor 0
+154 .L26: .L14>ModRegsFor<ModRegsFor 0
+155 tst r24>ModRegsFor<ModRegsFor 0
+156 breq .L20>ModRegsFor<ModRegsFor 0
+157 .L19: .L20>ModRegsFor<ModRegsFor 0
+158 mov r25,r28>ModRegsFor<ModRegsFor 2000000
+159 andi r25,lo8(7)>ModRegsFor<ModRegsFor 2000000
+160 ldi r18,lo8(1)>ModRegsFor<ModRegsFor 40000
+161 ldi r19,hi8(1)>ModRegsFor<ModRegsFor 80000
+162 rjmp 2f>ModRegsFor<ModRegsFor 0
+163 1: lsl>ModRegsFor<ModRegsFor 0
+164 rol r19>ModRegsFor<ModRegsFor 80000
+165 2: dec>ModRegsFor<ModRegsFor 0
+166 brpl 1b>ModRegsFor<ModRegsFor 0
+167 sub r24,r18>ModRegsFor<ModRegsFor 1000000
+168 call Log2>ProcFind<ProcFind 2076195200, found=1
+ Call/RCall New Bads 3000000
+169 mov r22,r24>ModRegsFor<ModRegsFor 400000
+170 subi r22,lo8(-(1))>ModRegsFor<ModRegsFor 400000
+171 mov r24,r28>ModRegsFor<ModRegsFor 1000000
+172 call IndexKey>ProcFind<ProcFind 2076195296, found=1
+ Call/RCall New Bads ffffffffc3040000
+173 cpi r24,lo8(-46)>ModRegsFor<ModRegsFor 0
+174 breq .L24>ModRegsFor<ModRegsFor 0
+175 sts gSysVars+27,r24>ModRegsFor<ModRegsFor 0
+176 andi r28,lo8(-9)>ModRegsFor<ModRegsFor 10000000
+177 .L24: r28,lo8(-9)>ModRegsFor<ModRegsFor 0
+178 ldi r29,lo8(5)>ModRegsFor<ModRegsFor 20000000
+179 .L14: r29,lo8(5)>ModRegsFor<ModRegsFor 0
+180 sts gKeyGroup,r28>ModRegsFor<ModRegsFor 0
+181 ldi r24,lo8(16)>ModRegsFor<ModRegsFor 1000000
+182 sts gSysVars+28,r24>ModRegsFor<ModRegsFor 0
+183 sts gKeyState,r29>ModRegsFor<ModRegsFor 0
+184 rjmp .L8>ModRegsFor<ModRegsFor 0
+185 .L20: .L8>ModRegsFor<ModRegsFor 0
+186 ldi r29,lo8(0)>ModRegsFor<ModRegsFor 20000000
+187 rjmp .L14>ModRegsFor<ModRegsFor 0
+188 .L8: .L14>ModRegsFor<ModRegsFor 0
+189 /* epilogue
+190 pop r29>ModRegsFor<ModRegsFor 0
+191 pop r28>ModRegsFor<ModRegsFor 0
+192 ret r28 DoneProc: IntKey, ok=30000000, bad=fffffffff34c0000
+193 .size IntKey,
+194 .global KeyInit
+195 .type KeyInit,
+196 KeyInit: KeyInit,In Proc: KeyInit>GetProcRec>ProcFind<ProcFind 0, found=0
+ GetProcRec1 GetProcRec2 GetProcRec3<GetProcRec
+197 /* prologue:
+198 /* frame
+199 /* stack
+200 .L__stack_usage =>ModRegsFor<ModRegsFor 0
+201 in r24,39-32>ModRegsFor<ModRegsFor 1000000
+202 andi r24,lo8(-16)>ModRegsFor<ModRegsFor 1000000
+203 out 39-32,r24>ModRegsFor<ModRegsFor 0
+204 in r24,40-32>ModRegsFor<ModRegsFor 1000000
+205 ori r24,lo8(15)>ModRegsFor<ModRegsFor 1000000
+206 out 40-32,r24>ModRegsFor<ModRegsFor 0
+207 cbi 42-32,7>ModRegsFor<ModRegsFor 0
+208 sbi 43-32,7>ModRegsFor<ModRegsFor 0
+209 cbi 36-32,0>ModRegsFor<ModRegsFor 0
+210 sbi 37-32,0>ModRegsFor<ModRegsFor 0
+211 /* epilogue
+212 ret epilogue DoneProc: KeyInit, ok=0, bad=1000000
+213 .size KeyInit,
+214 .global KeyScanRaw
+215 .type KeyScanRaw,
+216 KeyScanRaw: KeyScanRaw,In Proc: KeyScanRaw>GetProcRec>ProcFind<ProcFind 0, found=0
+ GetProcRec1 GetProcRec2 GetProcRec3<GetProcRec
+217 /* prologue:
+218 /* frame
+219 /* stack
+220 .L__stack_usage =>ModRegsFor<ModRegsFor 0
+221 lds r24,gSysVars+28>ModRegsFor<ModRegsFor 1000000
+222 sbrc r24,5>ModRegsFor<ModRegsFor 0
+223 rjmp .L29>ModRegsFor<ModRegsFor 0
+224 in r24,38-32>ModRegsFor<ModRegsFor 1000000
+225 com r24>ModRegsFor<ModRegsFor 1000000
+226 andi r24,lo8(15)>ModRegsFor<ModRegsFor 1000000
+227 sts gKScanUnbounced,r24>ModRegsFor<ModRegsFor 0
+228 cbi 36-32,0>ModRegsFor<ModRegsFor 0
+229 sbi 37-32,0>ModRegsFor<ModRegsFor 0
+230 sbi 42-32,7>ModRegsFor<ModRegsFor 0
+231 cbi 43-32,7>ModRegsFor<ModRegsFor 0
+232 rjmp .L30>ModRegsFor<ModRegsFor 0
+233 .L29: .L30>ModRegsFor<ModRegsFor 0
+234 in r25,38-32>ModRegsFor<ModRegsFor 2000000
+235 com r25>ModRegsFor<ModRegsFor 2000000
+236 andi r25,lo8(15)>ModRegsFor<ModRegsFor 2000000
+237 lds r24,gKScanUnbounced>ModRegsFor<ModRegsFor 1000000
+238 swap r24>ModRegsFor<ModRegsFor 1000000
+239 andi r24,lo8(-16)>ModRegsFor<ModRegsFor 1000000
+240 or r24,r25>ModRegsFor<ModRegsFor 1000000
+241 sts gKScanUnbounced,r24>ModRegsFor<ModRegsFor 0
+242 cbi 42-32,7>ModRegsFor<ModRegsFor 0
+243 sbi 43-32,7>ModRegsFor<ModRegsFor 0
+244 sbi 36-32,0>ModRegsFor<ModRegsFor 0
+245 cbi 37-32,0>ModRegsFor<ModRegsFor 0
+246 .L30: 37-32,0>ModRegsFor<ModRegsFor 0
+247 lds r24,gSysVars+28>ModRegsFor<ModRegsFor 1000000
+248 ldi r25,lo8(32)>ModRegsFor<ModRegsFor 2000000
+249 eor r24,r25>ModRegsFor<ModRegsFor 1000000
+250 sts gSysVars+28,r24>ModRegsFor<ModRegsFor 0
+251 lds r24,gKScanUnbounced>ModRegsFor<ModRegsFor 1000000
+252 /* epilogue
+253 ret epilogue DoneProc: KeyScanRaw, ok=0, bad=3000000
+254 .size KeyScanRaw,
+255 .global KeyScan
+256 .type KeyScan,
+257 KeyScan: KeyScan,In Proc: KeyScan>GetProcRec>ProcFind<ProcFind 0, found=0
+ GetProcRec1 GetProcRec2 GetProcRec3<GetProcRec
+258 /* prologue:
+259 /* frame
+260 /* stack
+261 .L__stack_usage =>ModRegsFor<ModRegsFor 0
+262 /* #APP
+263 ; 398>ModRegsFor<ModRegsFor 0
+264 ;_IndCCall2 ;macro>ModRegsFor<ModRegsFor 0
+265 ; 0>ModRegsFor<ModRegsFor 0
+266 /* #NOAPP
+267 call KeyScanRaw>ProcFind<ProcFind 2076195584, found=1
+ Call/RCall New Bads 3000000
+268 lds r25,gSysVars+28>ModRegsFor<ModRegsFor 2000000
+269 sbrc r25,5>ModRegsFor<ModRegsFor 0
+270 rjmp .L32>ModRegsFor<ModRegsFor 0
+271 lds r25,gOldKScan>ModRegsFor<ModRegsFor 2000000
+272 cp r24,r25>ModRegsFor<ModRegsFor 0
+273 brne .L33>ModRegsFor<ModRegsFor 0
+274 call IntKey>ProcFind<ProcFind 2076195392, found=1
+ Call/RCall New Bads ffffffffc34c0000
+275 rjmp .L32>ModRegsFor<ModRegsFor 0
+276 .L33: .L32>ModRegsFor<ModRegsFor 0
+277 sts gOldKScan,r24>ModRegsFor<ModRegsFor 0
+278 .L32: gOldKScan,r24>ModRegsFor<ModRegsFor 0
+279 /* #APP
+280 ; 409>ModRegsFor<ModRegsFor 0
+281 ;_IndCCallRet ;macro>ModRegsFor<ModRegsFor 0
+282 ; 0>ModRegsFor<ModRegsFor 0
+283 /* epilogue
+284 /* #NOAPP
+285 ret #NOAPP DonePass!
+<IntWrapPass Done
+>ProcFind<ProcFind 2076195680, found=1
+>ProcFind<ProcFind 2076195680, found=1
+Found KeyScan=KeyScan in line 258>IntWrapBuild	push r18	push r19	push r22	push r24	push r25	push r30	push r31	pop r31	pop r30	pop r25	pop r24	pop r22	pop r19	pop r18<IntWrapBuild

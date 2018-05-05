@@ -203,10 +203,21 @@ void GetNextCmpAddr(void)
 {
 	if(!feof(gRelocFile)) {
 		int scanRes=0;
+		char ch;
 		fgets(gCmpLine,kMaxSrcLineLen,gRelocFile); // grab a line of text.
-		scanRes=sscanf(gCmpLine,"%d:w",&gNextCmpAddr);	// prime the next check addr.
+		scanRes=sscanf(gCmpLine,"%d:%c",&gNextCmpAddr,&ch);	// prime the next check addr.
 		if(scanRes==0 || scanRes==EOF)
 			gNextCmpAddr=-1;	// which means the address won't be found.
+		else {
+			if(ch=='x') {
+				if(gAutoMin) {	// change minAddr only for autoMin mode.
+					gMinAddr=0x3800-gNextCmpAddr;
+					gNextCmpAddr=-0x3800;	// that will never match.
+				}
+				fgets(gCmpLine,kMaxSrcLineLen,gRelocFile); // grab a line of text.
+				scanRes=sscanf(gCmpLine,"%d:%c",&gNextCmpAddr,&ch);	// prime the next check addr.
+			}
+		}
 	}
 }
 
@@ -296,7 +307,7 @@ int FindMinAddr(FILE *aFile)
 				minPos=ftell(aFile);
 			}
 			else
-				printf("Multiple FFCF @",gSrcLine);
+				printf("Multiple FFCF @%s",gSrcLine);
 		}
 	}
 	fseek(aFile,minPos,SEEK_SET); // reset the file pointer so we can carry on.

@@ -85,23 +85,6 @@ extern void _cmove(ushort src, ushort dst, ushort len);
  * way, because SRAM execution uses the SPI anyway.
  **/
 
-typedef union {
-	byte b[2];
-	ushort s;
-	byte *p;
-} tBigEndianWord;
-
-typedef struct {
-	byte port;
-	byte portBit;
-	tBigEndianWord src;
-	tBigEndianWord srcLen;
-	tBigEndianWord dst;
-	tBigEndianWord dstLen;
-} tSpiStruct;
-
-extern void SpiDrv(tSpiStruct *spiInfo);
-
 extern void _VM(void);
 
 #define VM() \

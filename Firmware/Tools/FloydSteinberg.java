@@ -3,14 +3,14 @@ import javax.swing.*;
 import java.awt.image.*;
 import java.io.*;
 
-public class FloydSteinberg extends JFrame {
+public class BlockGrapher extends JFrame {
  
     public int h=0,w=0;
 	byte[] rawImg;
 	int rawImgLen=0;
 	int inverse=0xff;
 	
-	public FloydSteinberg() {
+	public BlockGrapher() {
 	}
 	
 	/**
@@ -431,25 +431,13 @@ There are six record types:
 
 	public static void main(String[] args){
 		if(args.length<3)
-			System.out.println("usage: FloydSteinberg [-fs] [-rev] [-inv] srcFile dstHexFileBase cDataTitle"); 
+			System.out.println("usage: BlockGrapher srcFile dstHexFileBase cDataTitle"); 
 		else {
-			FloydSteinberg frame = new FloydSteinberg();
+			BlockGrapher frame = new BlockGrapher();
 			frame.setLayout(new FlowLayout());
 			int argc=0;
 			boolean dither=false;
 			boolean reconvert=false;
-			if(args[0].equals("-fs")) {
-				dither=true;
-				argc++;
-			}
-			if(args[argc].equals("-rev")) {
-				reconvert=true;
-				argc++;
-			}
-			if(args[argc].equals("-inv")) {
-				frame.inverse=0;
-				argc++;
-			}
 			byte[] ditherBits=frame.convert(args[argc],dither);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.setVisible(true);

@@ -40,7 +40,7 @@
 
 #include "CoreDefs.h"
 
-#define __TESTDEBUGFORTH__
+//#define __TESTDEBUGFORTH__
 
 #ifdef __TESTDEBUGFORTH__
 

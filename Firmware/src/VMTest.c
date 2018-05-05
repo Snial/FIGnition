@@ -374,9 +374,11 @@ void TestForth(void)
 
 #else
 
+extern const byte _FigRomCold PROGMEM;
+
 ushort ForthBoot(void)
 {
-	ushort bootLoc=(GetPgmByte(gForthBootAddr[0])<<8)|(GetPgmByte(gForthBootAddr[1]));
+	ushort bootLoc=(ushort)&_FigRomCold; //(GetPgmByte(gForthBootAddr[0])<<8)|(GetPgmByte(gForthBootAddr[1]));
 #ifdef _DEBUGBOOTROMADDR__
 	DotHex((ushort)gForthRom);
 	Emit(' ');

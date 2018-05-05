@@ -23,6 +23,9 @@
  * ********
  *
  * 0.1.0 08/06/2011 Initial Release.
+ * 0.2.0 31/05/2012 Oleg's Margin Comments algorithm.
+ * 0.3.0 12/09/2012 Ragged Line version.
+ * 0.3.1 07/11/2012 Page break (char \014) feature added.
  *
  * Contact
  * *******
@@ -62,7 +65,7 @@ tBool gPaddedText=kFalse;
 #define kFIGnitionScreenLineLen 25
 #define kFIGnitionBlockLen 500
 
-// #define __DEBUGMSG__
+//#define __DEBUGMSG__
 
 #ifdef __DEBUGMSG__
 
@@ -240,7 +243,7 @@ int T2E2PaddedOneScreen(FILE *srcFile, int firstChar)
 					__DEBUG1("In Colon!");
 					parseState |= kParseInColon; // we're in a colon def now.
 				}
-				if(strcmp(gT2E2CurrentWord,";")==0) { 
+				if(strcmp(gT2E2CurrentWord,";")==0 ) { 
 					if((parseState&(kParseInColon|kParseInQuote|
 							kParseInComment))==kParseInColon) { 
 						// finished colon def if it's not in a comment or quote.
@@ -342,7 +345,7 @@ char GetWhiteSpace(char *dst)
 	PrepLine();
 	indentWordBuff=gWordBuff;
 	gTokIndent=0;
-	while(*gWordBuff!='\0' && *gWordBuff==' ') {
+	while(*gWordBuff==' ' || *gWordBuff=='\t') {
 		lastWhiteSpace=*gWordBuff; // remember last whitespace.
 		*dst++=lastWhiteSpace; // whitespace too is copied.
 		gWordBuff++;	// skip all the whitespace.
@@ -359,7 +362,8 @@ void GetTok(char *dst, char match,int maxLen)
 {
 	int len=0;
 	PrepLine();
-	while(*gWordBuff!='\0' && *gWordBuff!=match && (!isspace(*gWordBuff) || match!=' ')) {
+	// End token at \0 or a matching char or any space type of character if we're matching a space.
+	while(*gWordBuff!='\0' && *gWordBuff!=match && (!isspace(*gWordBuff) || match!=' ' || *gWordBuff=='\014')) {
 		if(++len<maxLen)
 			*dst++ = *gWordBuff;	// copy non-whitespace chars.
 		gWordBuff++;
@@ -377,6 +381,8 @@ typedef enum {
 	kTokIdExit,
 	kTokIdDotQuote,
 	kTokIdComment,
+	kTokIdPageBreak,
+	kTokIdLocalExit,
 	kTokIdLast
 } tTokIds;
 
@@ -391,6 +397,8 @@ tT2E2Dict gT2E2Dict[] = {
 	{ kTokIdExit, ";"},
 	{ kTokIdDotQuote, ".\""},
 	{ kTokIdComment, "("},
+	{ kTokIdPageBreak, "\014"},
+	{ kTokIdLocalExit, "loc;"}
 };
 
 tBool CrCheck(void)
@@ -420,7 +428,9 @@ tParseFlags DictMatch(char *token)
 	return ix; //(ix<kTokIdLast)? ix:gRaggedParse:ix;
 }
 
-void GenNewFile(char *dstFileRoot, int fileNum)
+char gOverWriteCmd[512];
+
+void GenNewFile(char *dstFileRoot, int fileNum, int len)
 {
 	char dstFName[256];	// 256 char limit here!
 	if(gDstFile!=NULL) {
@@ -428,7 +438,12 @@ void GenNewFile(char *dstFileRoot, int fileNum)
 		gDstFile=NULL;
 	}
 	sprintf(dstFName,"%s%02d.hex",dstFileRoot,fileNum);
-	printf("\n[%s]\n",dstFName);
+	printf("\n[%s]=>%d bytes\n",dstFName,len);
+	gDstFile=fopen(dstFName,"r"); // try to read it.
+	if(gDstFile!=NULL) {	// it had existed.
+		sprintf(gOverWriteCmd,"cp %s _%s.hex",dstFName,dstFName);
+		system(gOverWriteCmd);
+	}
 	gDstFile=fopen(dstFName,"w");
 	if(gDstFile==NULL) {
 		printf("Bad file.");
@@ -443,7 +458,7 @@ int gDelGap=0;
 void T2E2ConvertBuff(int *buffLen, int *buffMarker, int *fileNum, char *dstFileRoot)
 {
 	if(*buffMarker>0) {	// output current one and start new one.
-		GenNewFile(dstFileRoot, *fileNum);
+		GenNewFile(dstFileRoot, *fileNum,*buffMarker);
 		ConvertBuff(gBlockBuff,*buffMarker);
 		memmove(gBlockBuff,gBlockBuff+gDelGap,*buffLen-gDelGap+1);
 	}
@@ -489,7 +504,11 @@ void T2E2WhiteSpace(int *buffLen,int *buffMarker,int *fileNum, char *dstFileRoot
 			gCanDelGap=kTrue;
 			__DEBUG1(" $$$ ");
 		}
-	}while(*gWordBuff<=' ' && !feof(gSrcFile) && --maxWhite>0);
+		if(*gWordBuff=='\014')
+			__DEBUG1(" PBreak ");
+	}while(--maxWhite>0 && *gWordBuff<=' ' && *gWordBuff!='\014' && !feof(gSrcFile));
+	if(*gWordBuff=='\014')
+		__DEBUG1(" PBreak2 ");
 	if(maxWhite<=0) {
 		__DEBUG1("Too much whitespace!");
 		exit(1);
@@ -516,9 +535,11 @@ int T2E2Ragged(FILE *srcFile,char *dstFileRoot)
 		if(gTokIndent>0)
 			strncat(gBlockBuff,"                              ",gTokIndent);
 		*/
-		strcat(gBlockBuff,gToken);
+		tParseFlags tok=DictMatch(gToken);
+		if(tok!=kTokIdPageBreak)
+			strcat(gBlockBuff,gToken);
 		//__DEBUG2("Blk:[%s]",gBlockBuff);
-		switch(DictMatch(gToken)) {
+		switch(tok) {
 		case kTokIdGeneric:
 			break;
 		case kTokIdColon:
@@ -527,6 +548,7 @@ int T2E2Ragged(FILE *srcFile,char *dstFileRoot)
 			gInColon=kTrue;
 			break;
 		case kTokIdExit:
+		case kTokIdLocalExit:
 			if(gInColon==kFalse)
 				printf("Double exit at: %s\n",gBlockBuff);
 			gInColon=kFalse;
@@ -549,9 +571,14 @@ int T2E2Ragged(FILE *srcFile,char *dstFileRoot)
 				strcat(gBlockBuff,")");
 			}
 			break;
+		/*
+		case kTokIdPageBreak:
+			T2E2ConvertBuff(&buffLen,&buffMarker,&fileNum,dstFileRoot);
+			break;
+		*/
 		}
 		buffLen=strlen(gBlockBuff);
-		if(buffLen>=kMaxLineLen) { // end of block.
+		if(buffLen>=kMaxLineLen || tok==kTokIdPageBreak) { // end of block.
 			T2E2ConvertBuff(&buffLen,&buffMarker,&fileNum,dstFileRoot);
 		}
 		/*
@@ -580,7 +607,7 @@ void T2E2Padded(FILE *srcFile,char *dstFileRoot)
 		if (lastChar == -1 && firstChar == '\n' &&
 					(firstChar=fgetc(srcFile)) == EOF)
 			break;
-		GenNewFile(dstFileRoot, fileNum);
+		GenNewFile(dstFileRoot, fileNum,510);
 		lastChar=T2E2PaddedOneScreen(srcFile, firstChar);
 		fileNum++;
 	}

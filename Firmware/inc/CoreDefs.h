@@ -60,7 +60,11 @@ typedef unsigned long ulong;
  *		 flag to determine it.
  * Bit 2 will be the Bitmap mode.
  **/
+#ifndef __AVRSim
 #define gSysFlags GPIOR0
+#else
+extern byte gSysFlags;
+#endif
 #define gSysFlags_HiResBit 0
 #define gSysFlags_RomExeBit 1
 #define gSysFlags_HiResScanBit 3
@@ -113,7 +117,8 @@ typedef unsigned long ulong;
 #define kHSyncPulse4us (12-1)
 #define kHSyncScanShort (80-1)
 #define kHSyncPulse2us (6-1)
-#define kFrameVideoMarginLeft (18-1) // actually about 4c later or .2us or 2 pixels.
+//#define kFrameVideoMarginLeft (18-1) // actually about 4c later or .2us or 2 pixels.
+#define kFrameVideoMarginLeft (8-1) // actually about 4c later or .2us or 2 pixels.
 #define kVideoBuffWidth 25
 #define kVideoBuffHeight 24
 //#define kVideoBuffWidth 48
@@ -133,7 +138,7 @@ typedef unsigned long ulong;
 #define kHSyncPulse4us (12-1)
 #define kHSyncScanShort (80-1)
 #define kHSyncPulse2us (6-1)
-#define kFrameVideoMarginLeft (14-1) // actually about 4c later or .2us or 2 pixels.
+#define kFrameVideoMarginLeft (7-1) // actually about 4c later or .2us or 2 pixels.
 #define kVideoBuffWidth 25
 #define kVideoBuffHeight 24
 //#define kVideoBuffWidth 48
@@ -145,20 +150,44 @@ typedef unsigned long ulong;
 
 #endif
 
+#define kVideoMode1TileWidth 20
+#define kVideoMode1TileHeight 20
+
 #define kChrSetChrs 128
 #define kChrSetBytesPerChar 8
 
 typedef struct {
-	byte *gCur;	// offset 0
+	union {
+		byte *gCur;	// Pointer to print position (text mode)
+					// (hires mode:) Y coord , ClipY.
+		struct {
+			byte y,clipY;
+		};
+	};
 	byte gCurX;	// offset 2 not sure if we need gCurY.
 	byte buff[8];	// offset 3 temp buffer.
 	byte gKScan;	// offset 11 debounced key.
 	byte *stackFrame; // offset 12 Parameter Frame Pointer.
+	byte clipLeft;	// Clip X coordinate.
+	byte clipRight; // Clip Right.
+	byte clipBot; // Clip Bottom..
+	byte savedX;	// previous X
+	byte savedY;	// previous Y.
+	byte swUartCh;		// software Serial out Character.
+	byte swUartState;	// Software Serial out state.
+	ushort userIntVec;	// user interrupt vector
+	byte userIntFlags[4];	// user interrupt flags.
+	byte key;			// key returned by keyboard driver.
+	char helpCount;		// helpcount used by keyboard driver.
 } tSysVars;
 
 extern tSysVars gSysVars;
 
+#ifdef __AVRSim
+#warning AVR SIM!
+#else
 extern byte gVideoBuff[kVideoBuffWidth*kVideoBuffHeight+kUdgChrs*kChrSetBytesPerChar];
+#endif
 #define gUDGBase (gVideoBuff+kVideoBuffWidth*kVideoBuffHeight)
 //extern volatile byte *gVPtr;	// defined in assembler.
 
@@ -193,12 +222,17 @@ extern ushort SerialFlashID(void);
 #define kKeyCtrl    (0x80+'^')
 #define kKeyEsc     27
 #define kKeyExe		(0x80+'\r')
-#define kKeyNext '\016'
-#define kKeyPrev '\017'
+#define kKeyPrev '\016'
+#define kKeyNext '\017'
+#define kKeyPgDn '\020'
+#define kKeyPgUp '\021'
+
 #define kKeyComplete (0x80+' ')
 extern byte KeyP(void);
 extern byte Key(void);
 
 extern void __fill(ushort src, ushort len, char ch);
+
+#define Int5RetVec ((0xc>>1)-2)
 
 #endif

@@ -52,13 +52,53 @@ void CurY()
 
 //#define kDebugY0 20
 #define kDebugY0 0
+#define gSysVarsCurY (*(byte*)&gSysVars.gCur)
+#define kXOrigin 56
+#define kYOrigin 56
+
+#define _SmallerPrintAt__
+
+#ifdef _SmallerPrintAt__
 
 void PrintAt(byte x, byte y)
 {	
-	gSysVars.gCur=VideoAddr(0,y+kDebugY0);
-	gSysVars.gCurX=x;
-	//gCurY=y;
+	tSysVars *sysVars;
+	asm volatile("ldi %A0,lo8(gSysVars)\n"
+				"ldi %B0,hi8(gSysVars)\n" : "=r" (sysVars) );
+	if(gSysFlags&1) {
+		sysVars->savedX=sysVars->gCurX;
+		sysVars->savedY=sysVars->y;	// save old x,y.
+		sysVars->y=y+kYOrigin; // in hires mode we just store the y coordinate+origin.
+		x+=kXOrigin;
+	}
+	else {// in text mode we convert the y coordinate to the print address.
+		sysVars->gCur=VideoAddr(0,y+kDebugY0);
+		//sysVars->gCurX=x;
+	}
+	sysVars->gCurX=x;
 }
+
+#endif
+
+#define __MiniScrollTo__
+
+#ifdef __MiniScrollTo__
+
+void ScrollTo(byte *addr)
+{
+	while(gSysVars.gCur>=addr) {
+		gSysVars.gCur-=kVideoBuffWidth;
+		byte *dst=gVideoBuff;
+		byte *src=dst+kVideoBuffWidth;
+		__cmove((ushort)src,(ushort)dst,
+				kVideoBuffWidth*kVideoBuffHeight-kVideoBuffWidth); // move up.
+		src=&gVideoBuff[kVideoBuffWidth*kVideoBuffHeight-kVideoBuffWidth];
+		// clear the rest
+		__fill((ushort)(src),kVideoBuffWidth,' ');
+	}
+}
+
+#else
 
 void Scroll(char dy)
 {
@@ -105,28 +145,61 @@ void ScrollTo(byte *addr)
 	}
 }
 
+#endif
+
+#define __BlitSRAMAsm__
+
+extern ushort BlitSramAddr(byte x, byte y);
+extern byte BlitQuickShifter(byte x);
+extern void KeyHeart(void);
+extern void BlitTile(byte *bm, ushort dim, byte tile);
+extern void BlitBlt(byte tile, ushort dim);
+extern void BlitBlts(byte tile, ushort dim, byte repX, byte repY);
+
+#define __BitmappedEmit__
+#define __PixelBitmappedEmit__
+
+#ifdef __BitmappedEmit__
+
+void EmitWBitMap(byte ch)
+{
+	tSysVars *sysVars=&gSysVars;
+#ifdef __PixelBitmappedEmit__
+	BlitTile((byte*)kChrSet+(ch<<3),0x808,48);
+	BlitBlts(48, 0x808,0,0);	// it should be painted, not xor'd.
+#else
+	ushort dst=BlitSramAddr(sysVars->gCurX,gSysVarsCurY&0xf8);
+	ushort src=(ushort)kChrSet+(ch<<3);
+	__cmove(src,dst,8);
+	sysVars->gCurX+=8;
+#endif
+	if(sysVars->gCurX>159+kXOrigin) {
+		gSysVarsCurY+=8;
+		sysVars->gCurX=kXOrigin;
+		if(gSysVarsCurY>159+kYOrigin)
+			gSysVarsCurY=0;	// reset to top left, don't scroll
+	}
+}
+
+#endif
+
+//#define _DebugCheckCur__
+
 void EmitW(short ch)
 {
 	tSysVars *sysVars=&gSysVars;
 	byte inc=1;
+#ifdef __BitmappedEmit__
+	if(gSysFlags&1) {
+		EmitWBitMap(ch);
+		return;
+	}
+#endif
 	switch(ch) {
 	case kKeyEnter:
 		sysVars->gCurX=kVideoBuffWidth;	// force next line.
 		ch=0;
 		break;
-	/*
-	case kKeyDel:
-		if(sysVars->gCurX!=0) {
-			sysVars->gCurX--;
-		}
-		else {
-			sysVars->gCurX=kVideoBuffWidth-1;
-			sysVars->gCur-=kVideoBuffWidth;
-		}
-		inc=0;
-		ch=' ';
-		break;
-	*/
 	}
 
 	if(sysVars->gCurX>=kVideoBuffWidth) { // trying to print off rhs?
@@ -141,7 +214,13 @@ void EmitW(short ch)
 	// TODO: Fix.
 	//PrintAt(sysVars->gCurX,gCurY);
 	if(ch) {
+#ifdef _DebugCheckCur__
+		ushort curDst=(ushort)&sysVars->gCur[sysVars->gCurX];
+		if(curDst<(ushort)gVideoBuff || curDst>=(ushort)&gVideoBuff[kVideoBuffWidth*kVideoBuffHeight])
+			sysVars->gCur=gVideoBuff;	// offscreen, don't display.
+#endif
 		sysVars->gCur[sysVars->gCurX] = ch;
+
 		sysVars->gCurX+=inc;
 	}
 #ifdef __HWTEST_DEBUGEMIT
@@ -183,16 +262,14 @@ void Dot(int x)
 void DotHex(ushort x)
 {
 	byte digit,pastLeading0s=0;
-	Emit('0');
-	Emit('x');
+	Emit('$');
 	for(digit=0;digit<4;digit++) {
-		char ch=(x>>12)+'0';
-		if(ch>'0' || digit==3)
-			pastLeading0s=1;
-		if(pastLeading0s) {
-			if(ch>'9')
+		char ch=(x>>12);
+		pastLeading0s|=(byte)ch;
+		if(digit==3 || pastLeading0s) {
+			if(ch>9)
 				ch=ch+'a'-'9'-1;
-			Emit(ch);
+			Emit(ch+'0');
 		}
 		x<<=4;
 	}
@@ -201,6 +278,7 @@ void DotHex(ushort x)
 
 #endif
 
+/*
 void Cls(void)
 {
 	byte *vPtr=&gVideoBuff[kVideoBuffWidth*kDebugY0];
@@ -209,7 +287,7 @@ void Cls(void)
 	}while(vPtr<&gVideoBuff[kVideoBuffWidth*kVideoBuffHeight]);
 	PrintAt(0,0); // return to top,left.
 }
-
+*/
 
 /**
  * The graphics system has a global pen.
@@ -247,12 +325,21 @@ void Cls(void)
  *
  *
  **/
+extern void WriteMemNoWait(ushort addr, byte *data, ushort len);
+
 void PlotHiRes(byte x, byte y)
 {
-	if(x>=kMaxHiResX || y>=kMaxHiResY)
+	if(x>kMaxHiResX || y>kMaxHiResY)
 		return;
+#ifdef __BlitSRAMAsm__
+
+	ushort plotAddr=BlitSramAddr(x+kXOrigin,y+kYOrigin);
+	byte aSrc=BlitQuickShifter(x);
+	byte c1;
+#else
+
 	ushort plotAddr=kVideoHiResBase+(x&0xf8)+(y&7);
-	byte c1=20;
+	byte c1=kVideoMode1TileWidth;
 	// to avoid needing a 'C' multiply routine.
 	asm volatile("andi %1,0xf8" "\n\t"
              "mul %1, %2"         "\n\t"
@@ -262,11 +349,31 @@ void PlotHiRes(byte x, byte y)
              : "+r" (plotAddr), "+r" (y) : "r" (c1));
     //((y&0xf8)<<3);
 	byte aSrc=(128>>(x&7));
+#endif
 	c1=(gPenMode&(1<<1)) ? aSrc:0;
 	byte c2=(gPenMode&(1<<0)) ? aSrc:0;
 	byte pap=0;	
 	//SramWaitData(pap);
+	/*
+	PrintAt(0,12*8);
+	c1=0;
+	do{
+		EmitW(c1);
+	}while(++c1<128);
+	EmitW('*');
+	DotHex(plotAddr);
+	//DotHex(c1);
+	//DotHex(aSrc);
+	for(c1=0;c1<8;c1++) {
+		DotHex(c1);
+		DotHex(BlitQuickShifter(c1));
+	}
+	SramDisableCS();
+	KeyHeart();
+	*/
+
 	byte to=4;
+	
 	while(!(SPSR & (1<<SPIF)) && --to)	// just wait for memory to complete.
 			;
 	to=SPDR;
@@ -278,7 +385,8 @@ void PlotHiRes(byte x, byte y)
 	//			 (~c1&~c2&pap) | (~c1&c2);
 	pap=((pap|c2)&~c1)|(~pap&c1&c2);
 	gSysVars.buff[0]=pap; //pap;
-	WriteMem(plotAddr,gSysVars.buff,1); // Finally write it back.
+	//KeyHeart();
+	WriteMemNoWait(plotAddr,gSysVars.buff,1); // Finally write it back.
 }
 
 void PlotLoRes(byte x, byte y)

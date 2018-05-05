@@ -96,17 +96,22 @@ ushort SerialFlashID(void)
 	return id;
 }
 
+void SerialFlashGenFunc(ushort sector, byte cmd)
+{
+	SerialFlashEnableCS();
+	SpiMasterTransmit(cmd);
+	SpiMasterTransmit(sector>>8);
+	SpiMasterTransmit(sector&0xff);
+	SpiMasterTransmit(0);	// page aligned.
+}
+
 void SerialFlashEraseSector(ushort sector)
 {
 	ushort eraseCmd=kSerialFlashSE;
 	if((SerialFlashID()&0xff00)==0x2000)
 		eraseCmd=kSerialFlashBE;	// BotBoot chips use Block Erase.
 	SerialFlashWriteEnable();
-	SerialFlashEnableCS();
-	SpiMasterTransmit(eraseCmd);
-	SpiMasterTransmit(sector>>8);
-	SpiMasterTransmit(sector&0xff);
-	SpiMasterTransmit(0);	// page aligned.
+	SerialFlashGenFunc(sector,eraseCmd);
 	SerialFlashDisableCS();
 	SerialFlashWaitReady();
 }
@@ -114,11 +119,15 @@ void SerialFlashEraseSector(ushort sector)
 void SerialFlashReadBlock(ushort block, byte *dest)
 {
 	ushort ix;
+#if 0
 	SerialFlashEnableCS();
 	SpiMasterTransmit(kSerialFlashREAD);
 	SpiMasterTransmit(block>>8);
 	SpiMasterTransmit(block&0xff);
 	SpiMasterTransmit(0);	// page aligned.
+#else
+	SerialFlashGenFunc(block,kSerialFlashREAD);
+#endif
 	for(ix=0;ix<kSerialFlashBlockSize;ix++) {	// blocks are 256b
 		//SpiMasterReadByte();
 		*dest++ = SpiMasterReadByte(); // gSpiResVal;
@@ -130,11 +139,15 @@ void SerialFlashWriteBlock(ushort block, byte *src)
 {
 	ushort ix;
 	SerialFlashWriteEnable();
+#if 0
 	SerialFlashEnableCS();
 	SpiMasterTransmit(kSerialFlashPP);
 	SpiMasterTransmit(block>>8);
 	SpiMasterTransmit(block&0xff);
 	SpiMasterTransmit(0);	// page aligned.
+#else
+	SerialFlashGenFunc(block,kSerialFlashPP);
+#endif
 	for(ix=0;ix<kSerialFlashBlockSize;ix++) {	// blocks are 256b
 		SpiMasterTransmit(*src++);
 	}

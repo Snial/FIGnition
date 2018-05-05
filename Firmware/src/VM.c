@@ -43,9 +43,6 @@
 #include "Spi.h"
 #include "FIGnitionMem.h"
 #include "ForthDebug.h"
-#include "FigVFlash.h"
-//#include "ForthOps.h"
-//#include "FigEdit.h"
 #include "VMTest.h"
 #include "VM.h"
 
@@ -132,22 +129,6 @@ void _cmove(ushort src, ushort dst, ushort len)
 }
 
 #endif
-
-void SpiDrv(tSpiStruct *spiInfo)
-{	
-	InterruptSpi();
-	*(byte*)spiInfo->port &= ~spiInfo->portBit; // take SPi low to start transaction.
-	while(spiInfo->srcLen.s>0) {
-		SpiMasterTransmit(*spiInfo->src.p++);
-		spiInfo->srcLen.s--;
-	}
-	while(spiInfo->dstLen.s>0) {
-		*spiInfo->dst.p++=SpiMasterReadByte();
-		spiInfo->dstLen.s--;
-	}
-	*(byte*)spiInfo->port |= spiInfo->portBit; // take SPi hi to end transaction.
-	SramFlush();
-}
 
 #if 0
 void _VM(void)

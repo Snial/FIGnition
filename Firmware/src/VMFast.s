@@ -42,6 +42,10 @@
 
 #include "AsmSramMacros.h"
 
+#define __STACKCHECK__
+#define __BREAKCHECK__
+#define __USERINTS__
+
 .global	Emit
 	.type	Emit, @function
 Emit:
@@ -302,7 +306,7 @@ ForthBoot:
 	rjmp \target				;Don't need to do anything if in ROM.
 	VMRamInt \tmpA,\tmpB
 	cbi PORTB,kSramCS
-	call SramAbsBeginRd	;Start the read off.
+	call SramAbsBeginRd	;Start the read off, doesn't use x.
 	;VMUpdateAddrCache \addrHi \addrLo	;update cache during read.
 	sts gRamCache,\addrLo
 	sts gRamCache+1,\addrHi	;update the ram cache.	
@@ -313,7 +317,7 @@ ForthBoot:
 	rjmp \target				;Don't need to do anything if in ROM.
 	movw param0,\addrLo
 	cbi PORTB,kSramCS
-	call SramAbsBeginRd	;Start the read off.
+	call SramAbsBeginRd	;Start the read off. Doesn't use x.
 	;VMUpdateAddrCache \addrHi \addrLo	;update cache during read.
 	sts gRamCache,\addrLo
 	sts gRamCache+1,\addrHi	;update the ram cache.	
@@ -322,6 +326,76 @@ ForthBoot:
 _VMSeqReadIP:
 	VMSeqRead shortRet gIP+1 gIP
 	ret
+
+#define kSramInsWrite 2
+;param0=addr (in SRAM, =dst), param1=src (in internal RAM or ROM), param2=len.
+;These are the same parameters as for WriteMem.
+;Doesn't use x, doesn't save it.
+;Register usage:
+;	Only param0..param2, which are modified.
+;   param0=same value on exit.
+;	param1=modified.
+;	param2=0 on exit.
+#if 1
+.global	WriteMem
+	.type	WriteMem, @function
+WriteMem:
+.global	_VmBulkWrite
+	.type	_VmBulkWrite, @function
+_VmBulkWrite:
+	push zl
+	push zh
+	mov zl,param2
+	or zl,param2+1	;len=0?
+	breq _VmBulkWrite20	;don't write anything.
+	movw z,param1	;so we can read it directly, param1 is now free.
+	VMRamInt param1+1 param1+1	;wait for SRAM and Disable.
+_VmBulkWrite02:
+	nop
+	cbi PORTB,kSramCS	;Enable SRAM.
+	ldi param1,kSramInsWrite
+	out SPDR,param1	;start write instruction.
+	VMSeqWriteSpi param0+1 param1+1	;output the address hi with param1+1 as tmp.
+	VMSeqWriteSpi param0 param1+1	;output the address Lo
+	;Next we're ready to write data.
+_VmBulkWrite05:
+	cpi zh,0x10
+	brlo _VmBulkWrite10	;IntRamsrc.
+	;ROM=src.
+	lpm param1,Z+	;read from ROM.
+	rjmp _VmBulkWrite12
+_VmBulkWrite10:
+	ld param1,Z+	;read from Flash.
+_VmBulkWrite12:
+	VMSeqWriteSpi param1 param1+1	;wait and output the address Lo
+	subi param2,1
+	sbci param2+1,0	;dec len.
+	brne _VmBulkWrite05
+_VmBulkWrite20:
+	pop zh
+	pop zl
+	ret
+
+;Temporary Hack until I can remodel SPI to always use open SPI.
+.global	WriteMemNoWait
+	.type	WriteMemNoWait, @function
+WriteMemNoWait:
+	push zl
+	push zh
+	mov zl,param2
+	or zl,param2+1	;len=0?
+	breq _VmBulkWrite20	;don't write anything.
+	movw z,param1	
+	sbi PORTB,kSramCS	;Disable SRAM.
+	rjmp _VmBulkWrite02	;Just start writing to SRAM.
+	
+#endif
+
+_VmBulkReadForthFetch:
+	movw param0,gTos	;src addr is in gTos.
+	ldi param1+1,0		;	upper byte of dst is 0.
+	ldi param2+1,0		;	upper byte of len is 0
+	movw gDPSave,x
 
 ;param0 = src (in SRAM or ROM), param1=dst (in internal RAM), param2=len.
 ;Precondition: param2>0.
@@ -379,6 +453,169 @@ _VmBulkReadRom1:
 	brne _VmBulkReadRom1	;OK, next read.
 
 	ret
+
+;***
+; TrapJump is used when we need to re-read from a different RAM location,
+; either because of a jump / call / exec / exit / @ / c@ / ! or c!.
+; void SramAbsBeginRd(ushort addr)
+; {
+; 	byte data;
+; 	//SramEnableCS(); // TODO @Check.
+; 	_SpiMasterTransmit(SramInsRead,_SpiNullTask);
+; 	_SpiMasterTransmit((byte)(addr>>8),_SpiNullTask); // high byte.
+; 	_SpiMasterTransmit((byte)(addr&0xff),_SpiNullTask); // low byte.
+; 	//SpiMasterTransmit(0); // Start off the byte read.
+; 	SPDR = 0;	// start read
+; 	//data=SpiMasterReadByte();
+; 	//SramDisableCS();
+; 	//return data;
+; }
+; #define _SpiMasterTransmit(cData,task) 			
+; { 											
+; 	SPDR = cData;							
+; 	while(!(SPSR & (1<<SPIF))) {			
+; 		task						
+; 	}										
+; }
+;
+;***
+#define kSramInsRead 3
+#define kSramInsWrite 2
+
+_VmUserInt20:
+	rjmp _VmUserInt30	;delay before enabling sram.
+_VmUserInt30:
+	cbi PORTB,kSramCS	;start a new read
+	rjmp _VmUserInt50
+_VmUserInt50:
+	rjmp _VmTrapJumpUnScheduled
+
+_VmTrapJumpCached:
+	;ldi r18,kSramInsRead
+	out SPDR,r18	;we have 18c to check!
+	sec	;a flag for later, this is cached!
+	rjmp _VmTrapJump01
+
+_VmUserInt:
+	pop zh
+	pop zl	;return address.
+	brcc _VmUserInt01
+	sbiw gIP,1	;carry was set, so it's cached.
+	clr gCacheIns	;clear the cache instruction (it's now a nop).
+	clr gCacheIP	;and the cache IP too (so that if the cached instruction
+	clr gCacheIP+1	;address is found again, it won't be executed as NOP)
+_VmUserInt01:
+	push gIP+1
+	push gIP	;save what is now the gIP to return to.
+	push zl
+	push zh	;and now push back the machine code return address.
+	lds gIP,gSysVars_userIntVec	;this is the new jump address.
+	lds gIP+1,gSysVars_userIntVec+1	;taken from the Interrupt Vector
+	;movw gIP,gIP	;reset gIP.
+	;we need to push interrupt flags on the stack and
+	;clear them in sysVars.
+	ldi zl,lo8(gSysVars_userIntFlags)
+	ldi zh,hi8(gSysVars_userIntFlags)
+	st x+,gTos
+	st x+,gTos+1	;need to save gTos, replaced by flags+1:flags+0
+	cli
+	ldd gTos,Z+2
+	std Z+2,r1	;clear it
+	sei
+	st x+,gTos	;save bits <23:16> of user-ints.
+	cli
+	ldd gTos,Z+3	;bits <31:24> of user-ints.
+	std Z+2,r1	;clear it
+	sei
+	st x+,gTos	;save bits <31:24> of user-ints.
+	cli
+	ldd gTos,Z+0	;gTos low from bits <7:0> of flags.
+	std Z+0,r1	;clear it
+	sei
+	cli
+	ldd gTos+1,Z+1	;gTos+1 from bits <15:8> of  flags.
+	std Z+1,r1	;clear it
+	sei
+	VMSeqWaitRam r18	;wait for the ram access to finish
+	sbi PORTB,kSramCS	;disable SRAM ready for restart.
+	;restart jump from gIP.
+	rjmp _VmUserInt20
+
+_VmTrapJumpUnScheduled:
+	ldi r18,kSramInsRead
+.global _VmTrapJump
+	.type	_VmTrapJump, @function
+_VmTrapJump:	; gIP = IP.
+	;ldi r18,kSramInsRead	;rescheduled.
+	out SPDR,r18	;we have 18c to check!
+	clc	;not cached.
+_VmTrapJump01:
+#ifdef __USERINTS__
+	lds r18,gSysVars_userIntFlags
+	lds r19,gSysVars_userIntFlags+1
+	or r18,r19
+	lds r19,gSysVars_userIntFlags+2
+	or r18,r19
+#endif
+	VMSeqWaitRam r19 ;use r19 for temp this time, doesn't affect cy.
+	out SPDR,gIP+1	;high byte of addr
+#ifdef __USERINTS__
+	lds r19,gSysVars_userIntFlags+3
+	or r18,r19
+	brne _VmUserInt	;13c or 14c (jump) or 15c/16c (if from cache)
+#endif
+#ifdef __STACKCHECK__
+	;Stack empty if DP <bss or DP > sp
+	ldi r18,hi8(__bss_end)	;start of stack.
+	cpi x,lo8(__bss_end)	;compare stack lo
+	cpc x+1,r18	;and stack hi
+	brlo _VmTrapJump10	;bad! 4c if OK, 5c if bad.
+	in r18,__SP_L__
+	in r19,__SP_H__
+	subi r18,40
+	sbci r19,0
+	cp x,r18	;>=
+	cpc x+1,r19	;>=sp?
+	brsh _VmTrapJump20	;11c total. That's enough.
+#endif
+	VMSeqWaitRam r18
+	out SPDR,gIP	;lo byte of addr
+#ifdef 	__BREAKCHECK__
+	lds r19,gSysVars_gKScan
+	cpi r19,0x96	;SW2+SW3+SW5+SW8
+	sbis GPIOR0,7	;bit0=1 to disable break
+	breq _VmTrapJump30	;10c.
+#endif
+	VMSeqWaitRam r18
+	out SPDR,gIP	;dummy out to start read.
+	ret
+
+_VmTrapJump10:
+	ldi gTos,lo8(_FigRomStackEmptyMsg)
+	ldi gTos+1,hi8(_FigRomStackEmptyMsg)
+	rjmp _VmTrapJump40
+_VmTrapJump20:
+	ldi gTos,lo8(_FigRomStackFullMsg)
+	ldi gTos+1,hi8(_FigRomStackFullMsg)
+	rjmp _VmTrapJump40
+_VmTrapJump30:
+	ldi gTos,lo8(_FigRomBreakMsg)
+	ldi gTos+1,hi8(_FigRomBreakMsg)
+_VmTrapJump40:
+	VMSeqWaitRam r18
+	sbi PORTB,kSramCS	;disable SRAM ready for restart.
+	ldi r18,0x4
+	cli
+	out __SP_H__,r18
+	ldi r18,0xff
+	out __SP_L__,r18	;reset return stack.
+	sei
+	movw gILoop,gIP	;remember the fail address (in gIP)
+	ldi gDP,lo8(__bss_end)
+	ldi gDP+1,hi8(__bss_end)	;set dp to start of stack.
+	ldi shortRet,lo8(_FigRomSystemCrash)
+	ldi shortRet+1,hi8(_FigRomSystemCrash)
+	rjmp _VM10	;resume.
 
 ;#define __DEBUGFASTCMOVE__
 
@@ -517,7 +754,7 @@ __cmove22:
 	ldi param1+1,hi8(gSysVars+3)	;need to use artificial buffer as src.
 	mov param2,r10	;and r10 as length.
 	ldi param2+1,0	;with an upper byte of 0.
-	call WriteMem	;write the entire buffer.
+	rcall WriteMem	;write the entire buffer.
 	sub r12,r10
 	sbc r13,r1	;running length-=current length.
 	brne __cmove20	;it will hit exactly 0.
@@ -577,7 +814,7 @@ __cmove12:
 	ldi param1+1,hi8(gSysVars+3)	;need to use artificial buffer.
 	mov param2,r10
 	ldi param2+1,0	;upper byte will be 0.
-	call WriteMem	;write the entire buffer.
+	rcall WriteMem	;write the entire buffer.
 	add r6,r10
 	adc r7,r1		;src+=current len.
 	add r8,r10
@@ -597,20 +834,20 @@ __cmoveEnd:
 	ret
 
 ;The fastest cases, IntRam as source,
-__cmoveIntRamSrc:
+__cmoveIntRamSrc:	;x unsaved here.
 	cpi param1+1,0x10
 	brlo __cmoveIntRamSrcDst
 	movw z,param0
 	movw param0,param1
 	movw param1,z	;dst,src,len.
-	jmp WriteMem	;just write directly from IntRam.
+	rjmp WriteMem	;just write directly from IntRam, saves x.
 
 ;Internal Ram as destination.
 __cmoveIntRamDst:
-	rjmp _VmBulkRead	;just read directly from SRAM.
+	rcall _VmBulkRead	;just read directly from SRAM.
+	ret
 
 __cmoveIntRamSrcDst:
-	
 	movw z,param0	;src.
 	movw x,param1
 	movw param0,param2	;len
@@ -756,7 +993,7 @@ __fill03:
 	adc r13,param2+1
 	ldi param1,lo8(gSysVars+3)
 	ldi param1+1,hi8(gSysVars+3)	;always need to use artificial buffer.	
-	call WriteMem
+	rcall WriteMem	;doesn't use x.
 	cp r10,r1
 	cpc r11,r1	;any remaining characters?
 	brne __fill02
@@ -787,7 +1024,13 @@ __fillInt1:
 	;x = p0+=len.
 	ret	;5c/byte = 2Mb/s.
 
-// #define __DEBUG_STEP__
+.global	VMWaitAndDisableRam
+	.type	VMWaitAndDisableRam, @function
+VMWaitAndDisableRam:
+	VMRamInt r0, r0	;Just a dummy temp is needed.
+	ret
+
+;#define __DEBUG_STEP__
 #ifdef __DEBUG_STEP__
 _LogStep:
 	push param0
@@ -812,56 +1055,109 @@ _LogStep:
 _VM:
 	_TestForth	;Translates into a call to TestForth if present.
 	call ForthBoot	;return val in shortRet
+	ldi gDP,lo8(__bss_end)
+	ldi gDP+1,hi8(__bss_end)	;set dp to start of stack.
+	;sbi PORTC,4
+_VM10:
 	movw gIP,shortRet
+	clr gCacheIP
+	clr gCacheIP+1	;clear cache IP.
 	SramFlush	;
 	ldi param0,0
 	ldi param0+1,0
 	cbi PORTB,kSramCS
-	call SramAbsBeginRd	;start a read from address 0.
-	ldi tmp0,lo8(__bss_end)
-	ldi tmp0+1,hi8(__bss_end)	;start of stack.
-	movw gDP,tmp0	;set dp
+	call SramAbsBeginRd	;start a read from given address
 	ldi tmp0,lo8(pm(_VMVecBase))
 	ldi tmp0+1,hi8(pm(_VMVecBase))
 	movw gVecBase,tmp0
+	;sbi PORTC,4
 
 .global	_VMNextIntJump
 	.type	_VMNextIntJump, @function
+_VMkFigTrapCheck:
 _VMNextIntJump:	;Here, we're possibly prefetching something and we
 				;need to stop it before setting RAM to jump to IP.
 	sbrs gIP+1,7
 	rjmp _VMNextRom	;just read as normal if it's ROM (need to opt).
+_VMNextIntJump10:
 	VMRamInt param0,param0+1	;interrupt SRAM.
-	movw param0,gIP
+	ldi r18,kSramInsRead
 	cbi PORTB,kSramCS
-	call SramAbsBeginRd	;Start the read off.
+	rcall _VmTrapJump	;Start the read off.
 	;VMUpdateAddrCache \addrHi \addrLo	;update cache during read.
 	;sts gRamCache,gIP
 	;sts gRamCache+1,gIP+1	;update the ram cache.
 	;cbi gSysFlags,gSysFlags_RomExeBit ;No longer executing from ROM.
 	rjmp _VMNextRam
 
+/**
+ * For VMNextJump, in the old version:
+ * the first byte of a jump target has been read
+ * and now we need to read the second byte.
+ * In the new version, we read the jump offset here
+ * 
+ ***/
 .global	_VMNextJump
 	.type	_VMNextJump, @function
 _VMNextJump:	;We're ready to jump to IP, and we need to.
 	sbrs gIP+1,7
 	rjmp _VMNextJumpRom	;We know it's ROM so just jump there.
 	;rcall _VMJumpIP	;get low byte, but don't read next.
-	mov gIP+1,gIns
+	;mov gIP+1,gIns
 _VMNextJumpRam:
-	VMReadRam gIP	;get low byte into gIP and don't inc.
+	VMReadRam param0	;get low byte into param0 and don't start next.
 	;mov gIP,shortRet	;it was loaded big-endian.
-	movw param0,gIP
+	add gIP,param0
+	adc gIP+1,r1
+	sbrs param0,7
+	rjmp _VMNextJumpRam10	;don't cache forward as only 50% used.
+	;Back jumps are cached.
+	dec gIP+1	;If a negative jump is needed, post-subtract 256.
+	
+	cp gIP,gCacheIP
+	cpc gIP+1,gCacheIP+1	;matching cacheIP?
+	brne _VMNextJumpRam05	;cache miss.
+	;cache hit.
+	adiw gIP,1	;skip cached instruction.
+	ldi r18,kSramInsRead
 	cbi PORTB,kSramCS
-	call SramAbsBeginRd	;Start the read off.
+	rcall _VmTrapJumpCached	;Start the read off from param0 for the ins following cached one.
+	mov shortRet,gCacheIns
+	rjmp _VMNextRamCached
+
+_VMNextJumpRam05:
+	movw gCacheIP,gIP	;cache the address.
+	ldi r18,kSramInsRead
+	cbi PORTB,kSramCS
+	rcall _VmTrapJump	;Start the read off from param0.
+	rcall _VMSeqReadIP	;grab the byte
+	mov gCacheIns,shortRet
+	rjmp _VMNextRamCached
+
+_VMNextJumpRam10:
+	ldi r18,kSramInsRead
+	cbi PORTB,kSramCS
+	rcall _VmTrapJump	;Start the read off from param0.
 	;VMUpdateAddrCache \addrHi \addrLo	;update cache during read.
 	;sts gRamCache,gIP
 	;sts gRamCache+1,gIP+1	;update the ram cache.	
 	rjmp _VMNextRam
-
+	
+_VMNextWordRam:
+	VMReadRam gIP	;get low byte into param0 and don't start next.
+	ldi r18,kSramInsRead
+	cbi PORTB,kSramCS
+	rcall _VmTrapJump	;Start the read off from param0.
+	rjmp _VMNextRam
+	
 _VMNextJumpRom:
-	VMReadRom gIP gIP
-	mov gIP+1,gIns
+	VMReadRom param0 gIP
+	sbrc param0,7
+	dec gIP+1	;If a negative jump is needed, pre-subtract 256.
+	add gIP,param0
+	adc gIP+1,r1
+
+	;mov gIP+1,gIns
 	rjmp _VMNextRom
 
 _VMkFigNext:
@@ -875,7 +1171,8 @@ _VMNextRam:
 	;Minimum cycle time for ROM Byte execution is 17c
 	;for a NOP, that's a little over 0.5MIPs, like a Z80
 	;at 2MHz.
-	VMSeqReadRam param0,gIP+1,gIP
+	VMSeqReadRam param0,gIP+1,gIP	;2 to 6 cycles after read.
+_VMNextRamCached:
 	;rcall _LogStep
 	cpi shortRet,kFigByteCodes
 	brsh _VMNextWord
@@ -883,7 +1180,7 @@ _VMNextRam:
 	movw z,gVecBase
 	add zl,shortRet
 	adc zh,r1	;z points to the vector
-	ijmp	;jump to the vector.
+	ijmp	;jump to the vector. 7c.
 
 _VMNextWord:
 	adiw gIP,1 ;increment gIP ready for the return.
@@ -891,7 +1188,7 @@ _VMNextWord:
 	push gIP
 	mov gIP+1,param0
 	sbrc param0,7	;Jump to RAM or ROM from RAM?
-	rjmp _VMNextJumpRam
+	rjmp _VMNextWordRam
 	;Jumping from RAM to ROM.
 	VMReadRam gIP	;get low byte straight into gIP and don't inc and disables RAM access.
 	out SPDR,gIP	;But we need to kick off a pseudo-read.
@@ -923,10 +1220,10 @@ _VMNextRomWord:
 ;Actual vectors start at Lit.
 _VMkFigExecute:	;tos=execution address, or primitive.
 	movw shortRet,gTos
-	movw x,gDP
+	;movw x,gDP
 	ld gTos+1,-x
 	ld gTos,-x		;and pop TOS.
-	movw gDP,x
+	;movw gDP,x
 	cpi shortRet,kFigByteCodes
 	cpc shortRet+1,r1	;gTos<kFigByteCodes?
 	brlo _VMNextExecute	;just execute directly.
@@ -937,10 +1234,10 @@ _VMkFigExecute1:	;RAM or ROM execution.
 	rjmp _VMNextIntJump
 
 _VMkFigZero:
-	movw x,gDP
+	;movw x,gDP
 	st x+,gTos
 	st x+,gTos+1	;little-endian.
-	movw gDP,x
+	;movw gDP,x
 	ldi gTos+1,0
 	ldi gTos,0
 	rjmp _VMNext
@@ -951,34 +1248,35 @@ _VMkFigLit:
 	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
 	mov shortRet+1,shortRet
 _VMkFigLit00:
-	movw x,gDP
+	;movw x,gDP
 	st x+,gTos
 	st x+,gTos+1	;little-endian.
-	movw gDP,x
+	;movw gDP,x
 	rcall _VMSeqReadIP	;OK, got the low byte of the destination start next.
 	movw gTos,shortRet
 	rjmp _VMNext
 	
 _VMkFigDrop:
-	movw x,gDP
+	;movw x,gDP
 	ld gTos+1,-x
 	ld gTos,-x
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 _VMkFigOBranch:
 	or gTos,gTos+1	;do the test.
-	movw x,gDP
+	;movw x,gDP
 	ld gTos+1,-x
 	ld gTos,-x
-	movw gDP,x
-	breq _VMkFigBranch
-	adiw gIP,2	;skip the branch.
-	rjmp _VMNextIntJump	;
+	;movw gDP,x
+	brne _VMkFigSkipBranch
+	;TODO, Fix the branch skip, it's just a ram skip now.
+	;adiw gIP,2	;skip the branch.
+	;rjmp _VMNextIntJump	;
 
 _VMkFigBranch:
-	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
-	mov gIns,shortRet	;save the return value.
+	;rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
+	;mov gIns,shortRet	;save the return value.
 	rjmp _VMNextJump
 	
 	; 6..11	****x*
@@ -987,11 +1285,11 @@ _VMkFigLoop:
 	; the loop isn't taken.
 	;Old style.
 	;With faster prfetched reads.
-	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
-	mov gIns,shortRet
-	movw x,gILoop
-	adiw x,1
-	movw gILoop,x
+	;rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
+	;mov gIns,shortRet
+	movw z,gILoop
+	adiw z,1
+	movw gILoop,z
 	cp gILoop,gLoopLim
 	cpc gILoop+1,gLoopLim+1
 	brpl _VMkFigLoop2
@@ -1001,29 +1299,31 @@ _VMkFigLoop1:
 	;mov gIP,shortRet	;it was loaded big-endian.
 	rjmp _VMNextJump
 _VMkFigLoop2:
-	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
-						;but we don't care about the previous result.
 	pop gILoop
 	pop gILoop+1
 	pop gLoopLim
-	pop gLoopLim+1
+	pop gLoopLim+1		;pop the loop info first (saves a bit of time).
+
+_VMkFigSkipBranch:
+	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
+						;but we don't care about the previous result.
 	rjmp _VMNext
 	
 _VMkFigPlusLoop:
-	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
-	mov gIns,shortRet	;save the high byte of the target address.
-	movw x,gILoop
-	add x,gTos
-	adc x+1,gTos+1
-	movw gILoop,x	;iLoop+=tos.
-	sub x,gLoopLim
-	sbc x+1,gLoopLim+1
-	eor x+1,gTos+1	;tos^(iLoop-loopLim).
-	movw z,gDP	;now pop tos
-	ld gTos+1,-z
-	ld gTos,-z
-	movw gDP,z
-	sbrc x+1,7	;if it was +ve, skip.
+	;rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
+	;mov gIns,shortRet	;save the high byte of the target address.
+	movw z,gILoop
+	add z,gTos
+	adc z+1,gTos+1
+	movw gILoop,z	;iLoop+=tos.
+	sub z,gLoopLim
+	sbc z+1,gLoopLim+1
+	eor z+1,gTos+1	;tos^(iLoop-loopLim).
+	;movw z,gDP	;now pop tos
+	ld gTos+1,-x
+	ld gTos,-x
+	;movw gDP,z
+	sbrc z+1,7	;if it was +ve, skip.
 	rjmp _VMkFigLoop1	;take the loop.
 	rjmp _VMkFigLoop2	;don't take the loop.
 	;This method 4w vs 9w, so possibly worthwhile.
@@ -1033,13 +1333,13 @@ _VMkFigDo:
 	push gLoopLim
 	push gILoop+1
 	push gILoop
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	movw gILoop,gTos
 	ld gLoopLim+1,-x
 	ld gLoopLim,-x
 	ld gTos+1,-x
 	ld gTos,-x
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 	
 _VMkFigUMult:	;a b -- ab.l ab.h
@@ -1051,7 +1351,7 @@ _VMkFigUMult:	;a b -- ab.l ab.h
 	;     bl*ah  0
 	;  bh*ah 0 0
 
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld tmp1+1,-x
 	ld tmp1,-x
 	eor tmp2,tmp2	;generate a 0 (r1 will be overwritten).
@@ -1082,14 +1382,14 @@ _VMkFigUMult:	;a b -- ab.l ab.h
 	st x+,gIns+1	;lo word stored.
 	
 	clr r1	;clear r1 at the end.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext ;32c, or 64c ,3us.
 
 _VMkFigPortMod:	; ( maskIn maskOut port >port> oldReading )
-	movw x,gDP
-	sbiw x,1
+	;movw x,gDP
+	sbiw x,1		;don't need high byte.
 	ld tmp0,-x		;maskOut
-	sbiw x,1
+	sbiw x,1		;don't need high byte.
 	ld tmp1,-x		;maskIn.
 	movw z,gTos	;port address.
 	cli				;halt interrupts.
@@ -1099,71 +1399,77 @@ _VMkFigPortMod:	; ( maskIn maskOut port >port> oldReading )
 	st z,tmp0		;Set result.
 	sei				;Interrupts off for 7c, 0.35us.
 	clr gTos+1	;clear upper byte of oldReading.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 _VMkFigUDivMod: ; ( DividendLo DividendHi Divisor -- MOD DIV ).
-	movw x,gDP
+	;movw x,gDP
 	ld tmp0+1,-x
-	ld tmp0,-x		;DividendHi
+	ld tmp0,-x		;DividendHi = MOD
 	ld tmp1+1,-x
-	ld tmp1,-x		;DividendLo.
+	ld tmp1,-x		;DividendLo = result.
 	
-	ldi	tmp3, 0x21	; 33 loops.
-	sub	tmp2, tmp2
-	sub	tmp2+1, tmp2+1	;MOD=0.
-	rjmp	_VMkFigUDivMod2
+	cp	tmp0, gTos
+	cpc	tmp0+1, gTos+1	;DivHi>=Divisor?
+	brsh _VMkFigUDivMod30
+	
+	ldi	tmp2, 0x11	; 17 loops.
+	rjmp	_VMkFigUDivMod20
 
-_VMkFigUDivMod1:
-	adc tmp2,tmp2
-	adc tmp2+1,tmp2+1
-	cp	tmp2, gTos
-	cpc	tmp2+1, gTos+1
-	brcs	_VMkFigUDivMod2
-	sub	tmp2, gTos
-	sbc	tmp2+1, gTos+1
-
-_VMkFigUDivMod2:
-	adc tmp1,tmp1
-	adc tmp1+1,tmp1+1
+_VMkFigUDivMod10:
 	adc tmp0,tmp0
 	adc tmp0+1,tmp0+1
-	dec	tmp3
-	brne	_VMkFigUDivMod1
+	cp	tmp0, gTos
+	cpc	tmp0+1, gTos+1
+	brlo	_VMkFigUDivMod20
+	sub	tmp0, gTos
+	sbc	tmp0+1, gTos+1
+
+_VMkFigUDivMod20:
+	adc tmp1,tmp1
+	adc tmp1+1,tmp1+1
+	dec	tmp2
+	brne	_VMkFigUDivMod10
 	com tmp1
 	com tmp1+1	;invert the result.
-	st x+,tmp2
-	st x+,tmp2+1	;save the MOD.
+_VMkFigUDivMod25:
+	st x+,tmp0
+	st x+,tmp0+1	;save the MOD.
 	movw gTos,tmp1	;store the DIV.
-	movw gDP,x	;pop the DivendLo and DivEndHi
+	;movw gDP,x	;pop the DivendLo and DivEndHi
 	rjmp _VMNext
+
+_VMkFigUDivMod30:
+	ldi tmp0,-1
+	ldi tmp0+1,-1	;MOD=-1 means overflow.
+	rjmp _VMkFigUDivMod25
 
 	// 12..17	******
 _VMkFigOpAnd:
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld tmp0+1,-x	;pop.
 	ld tmp0,-x	;pop.
 	and gTos,tmp0
 	and gTos+1,tmp0+1	;do the operation.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 _VMkFigOpOr:
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld tmp0+1,-x	;pop.
 	ld tmp0,-x	;pop.
 	or gTos,tmp0
 	or gTos+1,tmp0+1	;do the operation.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 _VMkFigOpXor:
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld tmp0+1,-x	;pop.
 	ld tmp0,-x	;pop.
 	eor gTos,tmp0
 	eor gTos+1,tmp0+1	;do the operation.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 _VMkFigLeave:
@@ -1173,10 +1479,10 @@ _VMkFigLeave:
 _VMkFigDoes:	;Does the same thing as RFrom in FIGnition.
 _VMkFigRFrom:	;Pops return stack to data stack.
 	__ForthDebugSP
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	st x+,gTos
 	st x+,gTos+1
-	movw gDP,x
+	;movw gDP,x
 	pop gTos
 	pop gTos+1	;
 	rjmp _VMNext	
@@ -1184,10 +1490,10 @@ _VMkFigRFrom:	;Pops return stack to data stack.
 	// 18..23	******	
 _VMkFigRFetch:	;Copies the return stack to the data stack.
 	;__ForthDebugSP
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	st x+,gTos
 	st x+,gTos+1	;push old tos, little-endian.
-	movw gDP,x
+	;movw gDP,x
 	in zl,__SP_L__
 	in zh,__SP_H__
 	ldd gTos,z+1	;push post-decrements, so we need to start at sp+1.
@@ -1198,10 +1504,10 @@ _VMkFigToR:	;Pushes the data stack tos to the return stack.
 	__ForthDebugSP
 	push gTos+1
 	push gTos
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld gTos+1,-x	;pop.
 	ld gTos,-x	;pop.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 _VMkFigZeroEq:
@@ -1220,17 +1526,23 @@ _VMkFigZeroLt:
 	mov gTos+1,gTos
 	rjmp _VMNext
 
+_VMkFigOpSub:	// implemented as neg then add.
+	com gTos+1	;Negate the upper byte 0=>0xff
+	neg gTos	;Negate, Cy=1 if gTos wasn't 0.
+	sbci gTos+1,0xff	;do the operation.
+
 _VMkFigPlus:
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld tmp0+1,-x	;pop.
 	ld tmp0,-x	;pop.
 	add gTos,tmp0
 	adc gTos+1,tmp0+1	;do the operation.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
+
 _VMkFigDPlus: ; ( Al Ah Bl Bh -- SumL SumH )
-	movw x,gDP
+	;movw x,gDP
 	ld tmp0+1,-x
 	ld tmp0,-x	;pop Bl
 	ld tmp1+1,-x	;
@@ -1243,7 +1555,7 @@ _VMkFigDPlus: ; ( Al Ah Bl Bh -- SumL SumH )
 	adc gTos+1,tmp1+1
 	st x+,tmp0
 	st x+,tmp0+1	;store sumL.
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 	// 24..29	******
@@ -1272,7 +1584,7 @@ _VMkFigMinus:
 	rjmp _VMNext
 
 _VMkFigDMinus: ; Lo Hi
-	movw x,gDP
+	;movw x,gDP
 	ld tmp0+1,-x
 	ld tmp0,-x	;pop Bl
 	com tmp0+1
@@ -1284,21 +1596,38 @@ _VMkFigDMinus: ; Lo Hi
 	sbci gTos+1,0xff
 	st x+,tmp0
 	st x+,tmp0+1
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext	;
 
 _VMkFigOver:
-	movw x,gDP	;stack, points to the next free location.
+	;movw x,gDP	;stack, points to the next free location.
+	ld tmp0+1,-x	;
+	ld tmp0,-x		;grab nos.
+	adiw x,2	;
 	st x+,gTos
-	st x+,gTos+1
-	movw gDP,x	;pushed tos.
-	sbiw x,4	;oldOver:nos:tos:^gDP
-	ld gTos,x+
-	ld gTos+1,x+
+	st x+,gTos+1	;save tos
+	movw gTos,tmp0	;copy nos to tos.
+	;movw gDP,x	;pushed tos.
+	;sbiw x,4	;oldOver:nos:tos:^gDP
+	;ld gTos,x+
+	;ld gTos+1,x+
+	rjmp _VMNext
+
+_VMkFig2Over:
+	st X+,gTos
+	st X+,gTos+1
+	movw z,x
+	sbiw z,8
+	ldd r0,Z+8-8
+	st X+,r0
+	ldd r0,Z+8-7
+	st X+,r0
+	ldd gTos,Z+8-6
+	ldd gTos+1,Z+8-5
 	rjmp _VMNext
 
 _VMkFigSwap:	;swap tos and nos.
-	movw x,gDP	;stack, points to the next free location.
+	;movw x,gDP	;stack, points to the next free location.
 	ld tmp0+1,-x
 	ld tmp0,-x
 	st x+,gTos
@@ -1306,61 +1635,100 @@ _VMkFigSwap:	;swap tos and nos.
 	movw gTos,tmp0
 	;Stack pointer doesn't change.
 	rjmp _VMNext
-	
+
+_VMkFig2Swap:
+	movw z,x
+	sbiw z,6
+	ldd param0,Z+6-4
+	ldd param0+1,Z+6-3	;a.hi in param0
+	std Z+6-4,gTos
+	std Z+6-3,gTos+1	;gTos to b.hi
+	movw gTos,param0	;a.hi to gTos.
+	ldd param0,Z+6-6
+	ldd param0+1,Z+6-2
+	std Z+6-2,param0
+	std Z+6-6,param0+1
+	ldd param0,Z+6-5
+	ldd param0+1,Z+6-1
+	std Z+6-1,param0
+	std Z+6-5,param0+1	;a.lo and b.lo exchanged.
+	rjmp _VMNext
+
 _VMkFigDup:
-	movw x,gDP	;stack, points to the next free location.
+	;movw x,gDP	;stack, points to the next free location.
 	st x+,gTos
 	st x+,gTos+1
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 	
 _VMkFigFetch:
 	ldi param2,2	;2 bytes.
-	ldi param1,gIns	;dst starting at gIns
+	ldi param1,gIns	;dst starting at r18
 	rjmp _VMkFigFetch1
 _VMkFigCFetch:
 	ldi param2,1	;1 byte.
-	ldi param1,gIns+1	;dst starting at gIns+1
-	clr gIns
+	ldi param1,gIns+1	;dst starting at r19
+	clr gIns		;clear lower byte of dest.
 
 _VMkFigFetch1:
-	movw param0,gTos	;src is at gTos.
-	ldi param1+1,0	;	upper byte of dst is 0.
-	ldi param2+1,0	;	upper byte of len is 0
-	rcall _VmBulkRead	;result in param0.	
+	rcall _VmBulkReadForthFetch	;result in param0.. doesn't save x, but uses it.
+	movw x,gDPSave		;restore data stack pointer.
 	mov gTos,gIns+1		;
 	mov gTos+1,gIns	;endian conversion (avr is little endian).
 	rjmp _VMNextIntJump
 
+_VMkFigDFetch:
+	ldi param1,16	;dst starting at r16..r19 (param4, param3, which isn't used).
+	ldi param2,4
+	rcall _VmBulkReadForthFetch	;result in param0.. doesn't save x, but x^dst+len, which is correct!
+						;param1=last byte read.
+	movw x,gDPSave		;restore data stack pointer.
+	st x+,gTos+1
+	st x+,gTos			;big->little endian conversion for low word.
+	mov gTos,r19
+	mov gTos+1,r18	;big->little endian conversion for hi word.
+	rjmp _VMNextIntJump	; finally pop into tos.
+	
+
 _VMkFigCPling:	;nos=value, tos=addr.
 	ldi param2,1	;WriteMem, store 1 byte.
-	movw x,gDP
-	sbiw x,1	;save a cycle compared with ld.
-	ld gIns,-x	;first byte will be the low byte, that's what we want.
+	movw param0,gTos	;dest address.
+	ld gTos+1,-x
+	ld gTos,-x	;lo byte needs to be loaded the right way round.
 	rjmp _VMkFigCPling1		;do the rest of the store byte.
+
+_VMkFigDStore:
+	ld gTos+2,-x	;little->big endian conversion for second (hi) word.
+	ld gTos+3,-x
+	ldi param2,4
+	rjmp _VMkFigDPling1	;pop tos and jump.
 
 _VMkFigPling:
 	ldi param2,2	;Write mem, store 2 bytes.
-	movw x,gDP
-	ld gIns,-x
-	ld gIns+1,-x	;Swap bytes.
+	;movw x,gDP
+_VMkFigDPling1:
+	movw param0,gTos	;dest address.
+	ld gTos,-x
+	ld gTos+1,-x	;litte->big endian conversion for first (lo) word.
 _VMkFigCPling1:
-	movw param0,gTos	;address.
+	ldi param1,lo8(gTos)
+	ldi param1+1,hi8(gTos)	;destination (in reg space).
+	ldi param2+1,0			;0 for hi byte of length.
+	;movw gDP,x
+	rcall WriteMem	;doesn't use x.
 	ld gTos+1,-x
 	ld gTos,-x			;pop tos.
-	ldi param1,lo8(gIns)
-	ldi param1+1,hi8(gIns)	;destination (in reg space).
-	ldi param2+1,0			;0 for hi byte.
-	movw gDP,x
-	call WriteMem
+	VMSeqWaitRam r0	;we have to wait for RAM to end - because we're writing to RAM.
+	sbi PORTB,kSramCS	;disable SRAM.
+	out SPDR,gIP	;But we need to kick off a pseudo-read.
 	rjmp _VMNextIntJump	;Doesn't set up a subsequent read, but still need to jump.
 
 _VMkFigGetI:
-	movw x,gDP
+	;movw x,gDP
 	st x+,gTos
 	st x+,gTos+1
 	movw gTos,gILoop
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 	
 _VMkFigInc:
@@ -1378,19 +1746,19 @@ _VMkFigNative:	; Native jump, must be in ROM.
 
 	// Special words for our version of Forth.
 _VMkFigIntCFetch:	;tos^internal Ram.
-	movw x,gTos
-	ld gTos,x
+	movw z,gTos
+	ld gTos,z
 	clr gTos+1
 	rjmp _VMNext
 
 _VMkFigIntCStore:	;nos=val, tos=addr
-	movw x,gDP
+	;movw x,gDP
 	sbiw x,1		;only the byte needed.
 	ld tmp0,-x
 	movw z,gTos	;copy the address into z for storing.
 	ld gTos+1,-x
 	ld gTos,-x	;pop gTos.
-	movw gDP,x
+	;movw gDP,x
 	st z,tmp0		;store the result.
 	rjmp _VMNext	
 
@@ -1405,10 +1773,10 @@ _VMkFigIntCStore:	;nos=val, tos=addr
  * Deallocation is done by l> 0 sf !
  **/
 _VMkFigIndexStackFrame:
-	movw x,gDP
+	;movw x,gDP
 	st x+,gTos
 	st x+,gTos+1	;little-endian.
-	movw gDP,x	;Push gTos.
+	;movw gDP,x	;Push gTos.
 _VMkFigIndexStackFrame10:
 	lds gTos,gSysVars_stackFrame	
 	lds gTos+1,gSysVars_stackFrame+1	;get the stack frame.
@@ -1420,22 +1788,24 @@ _VMkFigSFGet:
 	rcall _VMSeqReadIP	;OK, got the high byte of the index, fetch next
 	rcall _VMkFigIndexStackFrame
 _VMkFigIntFetch:
-	movw x,gTos
-	ld gTos,x+
-	ld gTos+1,x	;AVR memory order - little endian.
+	movw z,gTos
+	cli
+	ld gTos,z+
+	ld gTos+1,z	;AVR memory order - little endian.
+	sei
 	rjmp _VMNext
 
 _VMkFigSFPut:
 	rcall _VMSeqReadIP	;OK, got the high byte of the index, fetch next
 	rcall _VMkFigIndexStackFrame
 _VMkFigIntStore:
-	movw x,gDP
+	;movw x,gDP
 	ld tmp0+1,-x
 	ld tmp0,-x
 	movw z,gTos	;copy the address into z for storing.
 	ld gTos+1,-x
 	ld gTos,-x	;pop gTos.
-	movw gDP,x
+	;movw gDP,x
 	cli
 	st z+,tmp0		;store the result.
 	st z,tmp0+1	;little-endian in AVR.
@@ -1444,35 +1814,40 @@ _VMkFigIntStore:
 
 _VMkFigEmit:
 	movw param0,gTos
+	movw gDPSave,x
 	call EmitW
+	movw x,gDPSave	;preserve x.
+	sbis gSysFlagsIO,gSysFlags_HiResBit	;in hires we need to do an IntJump
 	rjmp _VMkFigDrop
+	rjmp _VMDropIntJump
 	
 _VMkFigDotHex:
 	movw param0,gTos
+	movw gDPSave,x
 	call DotHex
+	movw x,gDPSave	;preserve x.
+	sbis gSysFlagsIO,gSysFlags_HiResBit
 	rjmp _VMkFigDrop
+	rjmp _VMDropIntJump
 
 _VMkFigAt:	; x y --.
 	ldi zl,lo8(pm(PrintAt))
 	ldi zh,hi8(pm(PrintAt))
+
+
+.global	_VMCallCvoidFnP2
+	.type	_VMCallCvoidFnP2, @function
 _VMCallCvoidFnP2:
-	movw x,gDP
-	ld param0+1,-x
-	ld param0,-x
-	movw gDP,x	;got the second param
 	movw param1,gTos
-	icall
-	movw x,gDP
-	ld gTos+1,-x
-	ld gTos,-x
-	movw gDP,x
-	rjmp _VMNextIntJump
+	;movw x,gDP
+	rjmp _VMCallCvoidFnP2b
 
 .global	_VMkFigExit
 	.type	_VMkFigExit, @function
 _VMkFigExit:
 	pop gIP
 	pop gIP+1
+	;clr gCacheIPHi
 	;VMRdIntJump gIP+1,gIP,param0,param0+1	;Initiate a ram read if necessary.
 	rjmp _VMNextIntJump
 
@@ -1484,21 +1859,21 @@ _VMkFigDec:
 _VMkFigFill:
 	ldi zl,lo8(pm(__fill))
 	ldi zh,hi8(pm(__fill))
-	rjmp CCall3
+	rjmp _VMCallCVoidFnP3
 
 _VMkFigLsr:	; ( value shift -- shiftedResult )
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld tmp0+1,-x	;pop.
 	ld tmp0,-x	;pop.
 	rjmp _VMkFigLsr2
 _VMkFigLsr1:
 	mov tmp0,tmp0+1	;shift right by 8.
 	clr tmp0+1	;clear upper byte.
-	subi gTos,lo8(-8)
-	sbci gTos+1,hi8(-8)
+	subi gTos,lo8(8)
+	sbci gTos+1,hi8(8)
 _VMkFigLsr2:
 	cpi gTos,8
-	cpc gTos+1,0	;>=8?
+	cpc gTos+1,r1	;>=8?
 	brsh _VMkFigLsr1
 	rjmp _VMkFigLsr4
 _VMkFigLsr3:
@@ -1508,22 +1883,22 @@ _VMkFigLsr4:
 	dec gTos
 	brpl _VMkFigLsr3
 	movw gTos,tmp0
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
 _VMkFigLsl:
-	movw x,gDP	;stack
+	;movw x,gDP	;stack
 	ld tmp0+1,-x	;pop.
 	ld tmp0,-x	;pop.
 	rjmp _VMkFigLsl2
 _VMkFigLsl1:
 	mov tmp0+1,tmp0	;shift left by 8.
 	clr tmp0
-	subi gTos,lo8(-8)
-	sbci gTos+1,hi8(-8)
+	subi gTos,lo8(8)
+	sbci gTos+1,hi8(8)
 _VMkFigLsl2:
 	cpi gTos,8
-	cpc gTos+1,0	;>=8?
+	cpc gTos+1,r1	;>=8?
 	brsh _VMkFigLsl1
 	rjmp _VMkFigLsl4
 _VMkFigLsl3:
@@ -1533,63 +1908,83 @@ _VMkFigLsl4:
 	dec gTos
 	brpl _VMkFigLsl3
 	movw gTos,tmp0
-	movw gDP,x
+	;movw gDP,x
 	rjmp _VMNext
 
-_VMkFigEdit1:
+_VMkFigSerialFlashReadBlock:	;(block, *dest -- )
+	ldi zl,lo8(pm(SerialFlashReadBlock))
+	ldi zh,hi8(pm(SerialFlashReadBlock))
+_VMkFigSerialFlashPrepCallP2:
+	movw param1,gTos
+	ld param0+1,-x
+	ld param0,-x
+	;movw gDP,x
+_VMkFigSerialFlashPrepCallP1:
+	movw gDPSave,x
+	rcall VMWaitAndDisableRam
+	icall
 	cbi PORTB,kSramCS	;Enable RamCS.
-	ldi param0,5	;RDSR, read status register.
-	
+	ldi param0,5	;RDSR, read status register on SRAM - dummy 1 byte instuction.
+					;to get SRAM going.
 	out SPDR,param0
-_VMkFigEdit2:
-.global	_VMDropIntJump
-	.type	_VMDropIntJump, @function
-_VMDropIntJump:
-	movw x,gDP
-	ld gTos+1,-x
-	ld gTos,-x
-	movw gDP,x	;drop tos and do an IntJump.
-	rjmp _VMNextIntJump	;have to restart from the correct RAM address if needed.
-
-_VMkFigDskRd:
-	movw param0,gTos
-	call DskBlkRd	;result in shortRet
-	movw gTos,param0	;save in gTos.
-	ldi param0,lo8(gBlkBuff)
-	ldi param0+1,hi8(gBlkBuff)
-	ldi param1,lo8(gVideoBuff)
-	ldi param1+1,hi8(gVideoBuff)
-	ldi param2,lo8(512)
-	ldi param2+1,hi8(512)
-	call WriteMem
-	rjmp _VMNextIntJump
+	rjmp _VMCallCvoidFnDone
 	
-_VMkFigDskWr: ; phys virt kFigDskWr
+_VMkFigSerialFlashWriteBlock: ; phys virt kFigDskWr
+	ldi zl,lo8(pm(SerialFlashWriteBlock))
+	ldi zh,hi8(pm(SerialFlashWriteBlock))
+	rjmp _VMkFigSerialFlashPrepCallP2	;Deselect Ram.
+
+_VMkFigSerialFlashEraseSector:	; sector.
+	ldi zl,lo8(pm(SerialFlashEraseSector))
+	ldi zh,hi8(pm(SerialFlashEraseSector))
 	movw param0,gTos
-	movw x,gDP
-	ld param1+1,-x
-	ld param1,-x
-	ldi param2,lo8(gVideoBuff)
-	ldi param2+1,hi8(gVideoBuff)
-	movw gDP,x
-	call VDskWrite
-	rjmp _VMkFigEdit1
+	rjmp _VMkFigSerialFlashPrepCallP1
+	
+_VMkFigSerialFlashID:
+	movw gDPSave,x
+	rcall VMWaitAndDisableRam
+	call SerialFlashID
+	movw x,gDPSave	;restore parameter stack.
+	st x+,gTos
+	st x+,gTos+1
+	movw gTos,shortRet
+	cbi PORTB,kSramCS	;Enable RamCS.
+	ldi param0,5	;RDSR, read status register on SRAM - dummy 1 byte instuction.
+					;to get SRAM going.
+	out SPDR,param0
+	rjmp _VMNextIntJump
 
 _VMkFigCMove:	; src dst len
 	ldi zl,lo8(pm(__cmove))
 	ldi zh,hi8(pm(__cmove))
-	rjmp CCall3
+	;rjmp _VMCallCVoidFnP3
 
-CCall3:
+.global	_VMCallCVoidFnP3
+	.type	_VMCallCVoidFnP3, @function
+_VMCallCVoidFnP3:
 	movw param2,gTos
-	movw x,gDP
+	;movw x,gDP
+_VMCallCVoidFnP3b:
 	ld param1+1,-x
 	ld param1,-x
+_VMCallCvoidFnP2b:
 	ld param0+1,-x
 	ld param0,-x
-	movw gDP,x
+	;movw gDP,x
+_VMCallCvoidFn:
+	movw gDPSave,x
 	icall
-	rjmp _VMkFigEdit2
+_VMCallCvoidFnDone:
+	movw x,gDPSave	;restore gDP.
+
+.global	_VMDropIntJump
+	.type	_VMDropIntJump, @function
+_VMDropIntJump:
+	;movw x,gDP
+	ld gTos+1,-x
+	ld gTos,-x
+	;movw gDP,x	;drop tos and do an IntJump.
+	rjmp _VMNextIntJump	;have to restart from the correct RAM address if needed.
 
 _VMkFigPlot:	; x y
 	ldi zl,lo8(pm(Plot))
@@ -1598,8 +1993,11 @@ _VMkFigPlot:	; x y
 
 _VMkFigSpi:	;
 	movw param0,gTos
+	movw gDPSave,x
 	call SpiDrv
-	rjmp _VMkFigEdit2
+_VMkRestoreDPDropIntJump:
+	movw x,gDPSave
+	rjmp _VMDropIntJump
 
 _VMkFigTrace:
 	StartTrace
@@ -1611,23 +2009,60 @@ _VMkFigDumpDict:
 	rjmp _VMkFigDrop
 
 _VMkFigVarDoes:	;returns ip on the data stack and then does exit.
-	movw x,gDP
+	;movw x,gDP
 	st x+,gTos
 	st x+,gTos+1
-	movw gDP,x	;saved tos.
+	;movw gDP,x	;saved tos.
 	movw gTos,gIP
 	rjmp _VMkFigExit
 	
+_VMkFigDConstDoes:
+	rcall _VMConstWord
+	
 _VMkFigConstDoes:	;does a fetch from ip then returns, it's like lit, then exit.
-	movw x,gDP
+	;movw x,gDP
+	rcall _VMConstWord
+	rjmp _VMkFigExit
+
+_VMConstWord:
 	st x+,gTos
 	st x+,gTos+1	;little-endian.
-	movw gDP,x
-	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
+	;movw gDP,x
+	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next, doesn't use x.
 	mov gTos+1,shortRet
-	rcall _VMSeqReadIP	;OK, got the high byte of the destination start next.
+	rcall _VMSeqReadIP	;OK, got the lo byte of the destination start next, doesn't use x
 	mov gTos,shortRet
-	rjmp _VMkFigExit
+	ret
+
+_VMkkFigTile:
+	ldi zl,lo8(pm(BlitTile))
+	ldi zh,hi8(pm(BlitTile))
+	rjmp _VMCallCVoidFnP3
+_VMkkFigBlt:
+	ldi zl,lo8(pm(BlitBlt))
+	ldi zh,hi8(pm(BlitBlt))
+	rjmp _VMCallCvoidFnP2
+		
+_VMkkFig2Blt:	;tile2# dim tile1# dim2
+	call Blit2Blt	;it expects a Forth environment.
+	rjmp _VMkRestoreDPDropIntJump	;restore x, pop into tos and int Jump.
+	
+_VMkkFigBlts:	;tile# dim xrep yrep. 4 parameters.
+	ldi zl,lo8(pm(BlitBlts))
+	ldi zh,hi8(pm(BlitBlts))
+.global	_VMCallCVoidFnP4
+	.type	_VMCallCVoidFnP4, @function
+_VMCallCVoidFnP4:
+	movw param3,gTos
+	;movw x,gDP	
+	ld param2+1,-x
+	ld param2,-x
+	rjmp _VMCallCVoidFnP3b
+
+_VMkkFigClip:
+	ldi zl,lo8(pm(BlitClip))
+	ldi zh,hi8(pm(BlitClip))
+	rjmp _VMCallCvoidFnP2
 
 _VMkFigUndefined:
 	rjmp _VM	;Reset.
@@ -1696,8 +2131,8 @@ _VMVecBase:	;Contains the 128 Execution Vectors.
 	rjmp _VMkFigSFPut
 	rjmp _VMkFigLsr
 	rjmp _VMkFigLsl
-	rjmp _VMkFigDskRd
-	rjmp _VMkFigDskWr
+	rjmp _VMkFigSerialFlashReadBlock
+	rjmp _VMkFigSerialFlashWriteBlock
 	rjmp _VMkFigCMove
 	rjmp _VMkFigPlot
 	rjmp _VMkFigSpi
@@ -1707,3 +2142,22 @@ _VMVecBase:	;Contains the 128 Execution Vectors.
 	// remaining possible tokens 60..61
 	rjmp _VMkFigVarDoes
 	rjmp _VMkFigConstDoes
+	
+	// Blitting tokens:
+	rjmp _VMkkFigTile
+	rjmp _VMkkFigBlt
+	rjmp _VMkkFig2Blt
+	rjmp _VMkkFigBlts
+	rjmp _VMkkFigClip
+	
+	// 
+	rjmp _VMkFigOpSub
+	rjmp _VMkFigSerialFlashEraseSector
+	rjmp _VMkFigSerialFlashID
+
+	//
+	rjmp _VMkFigDFetch
+	rjmp _VMkFigDStore
+	rjmp _VMkFigDConstDoes
+	rjmp _VMkFig2Over
+	rjmp _VMkFig2Swap

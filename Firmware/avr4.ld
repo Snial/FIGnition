@@ -3,8 +3,7 @@ OUTPUT_FORMAT("elf32-avr","elf32-avr","elf32-avr")
 OUTPUT_ARCH(avr:4)
 MEMORY
 {
-  text      (rx)   : ORIGIN = 0, LENGTH = 16K
-  fth       (r)    : ORIGIN = 0x0000, LENGTH = 32K
+  text      (rx)   : ORIGIN = 0, LENGTH = 0x8000
   data      (rw!x) : ORIGIN = 0x800060, LENGTH = 0xffa0
   eeprom    (rw!x) : ORIGIN = 0x810000, LENGTH = 64K
   fuse      (rw!x) : ORIGIN = 0x820000, LENGTH = 1K
@@ -125,6 +124,8 @@ SECTIONS
     *(.text)
     . = ALIGN(2);
     *(.text.*)
+    *(.roData2)
+    *(.roData2*)
     . = ALIGN(2);
     *(.fini9)  /* _exit() starts here.  */
     KEEP (*(.fini9))
@@ -155,8 +156,8 @@ SECTIONS
     *(.fth)
     . = ALIGN(2);
     *(.fth.*)
-  } > fth
-  .data	  : AT (ADDR (.text) + SIZEOF(.text)+ SIZEOF (.fth))
+  } > text
+  .data	  : AT (ADDR (.text) + SIZEOF(.text)+SIZEOF(.fth))
   {
      PROVIDE (__data_start = .) ;
     *(SORT_BY_NAME(.data))
@@ -168,6 +169,20 @@ SECTIONS
      _edata = . ;
      PROVIDE (__data_end = .) ;
   }  > data
+  .bootloader 0x7800 : AT (0x3800)
+  {
+    *(.bootloader)
+    . = ALIGN(2);
+    *(.bootloader.*)
+    *(.bootloaderasm)
+  } > text
+  .microboot 0x7f80 : AT (0x3f80)
+  {
+  	__microBoot = . ;
+    *(.microboot)
+    . = ALIGN(2);
+    *(.microboot.*)
+  } > text
   .bss   : AT (ADDR (.bss))
   {
      PROVIDE (__bss_start = .) ;

@@ -60,7 +60,7 @@ doBlink:
 	;Port is D2.
 	push r16
 	push r17
-	in r16,PORTD	;get portD.
+	;in r16,PORTD	;get portD.
 	mov r17,r16
 	andi r16,0xf3	;only want bits 2,3.
 	subi r17,-4
@@ -99,8 +99,8 @@ initBlink:
 ;That way we will only be 1.6% out at the end of a char.
 ;The CTC is set to set or reset the output compare according to the
 ;output bit we want.
-;We use 1 byte for the gSwUartState
-;1 byte for the gSwUartCh.
+;We use 1 byte for the gSysVars_swUartState
+;1 byte for the gSysVars_swUartCh.
 ;
 ;The above figures work for 20MHz, but for 16MHz it's different.
 ;Timer period was clock/64 for 20MHz => 312.5KHz
@@ -119,6 +119,9 @@ initBlink:
 ;So it's 11c (1us) vs 45c (nearly 3us).
 ;************
 
+#define KSwUartClearOp 0x20
+#define kSwUartSetOp 0x30
+
 #if F_CPU == 12000000
 #define kSwUartCtcPeriodEven (19-1)
 #define kSwUartCtcPeriodOdd (20-1)
@@ -134,34 +137,36 @@ initBlink:
 #define kSwUartCtcPeriodOdd 33
 #endif
 
-.global	__vector_14
-	.type	__vector_14, @function
-__vector_14:
-SwUartInt:	;interrupt routine, OC0A has been set.
+.global	__vector_15
+	.type	__vector_15, @function
+__vector_15:
+SwUartInt:	;interrupt routine, OC0B has been set.
 	;We also want to re-enable interrupts too, but not yet.
 	sei
 	;rjmp SwUartInt	;Hang!
+	push tmp0
+	in tmp0,__SREG__
 	push tmp0
 	push tmp0+1
 	;lds tmp0,gSwUartSlowCount
 	;dec tmp0
 	;sts gSwUartSlowCount,tmp0
 	;brne SwUartInt22
-	lds tmp0,gSwUartState
+	lds tmp0,gSysVars_swUartState
 	dec tmp0
-	sts gSwUartState,tmp0	;update the state
+	sts gSysVars_swUartState,tmp0	;update the state
 	breq SwUartInt10	;Done!
-	ldi tmp0+1,kSwUartCtcPeriodEven
+	subi tmp0+1,-kSwUartCtcPeriodEven
 	sbrc tmp0,0	;even?
-	ldi tmp0+1,kSwUartCtcPeriodOdd
-	out OCR0A,tmp0+1	;ok don't need tmp0+1 now!
-	lds tmp0+1,gSwUartCh	;next bit.
+	subi tmp0+1,-kSwUartCtcPeriodOdd
+	out OCR0B,tmp0+1	;ok don't need tmp0+1 now!
+	lds tmp0+1,gSysVars_swUartCh	;next bit.
 	sec // sbi 0x3f,0	;Set carry flag (means stop bit will be 1).
 	ror tmp0+1
-	sts gSwUartCh,tmp0+1	;done it.
-	ldi tmp0,0x82		;Clear on timer match.
+	sts gSysVars_swUartCh,tmp0+1	;done it.
+	ldi tmp0,KSwUartClearOp		;Clear on timer match.
 	brcc SwUartInt20	;0x82 or 0xc2.
-	ldi tmp0,0xc2		;Set on timer match.
+	ldi tmp0,kSwUartSetOp		;Set on timer match.
 	rjmp SwUartInt20
 SwUartInt10:	;Done, stop the clock (since tmp0=0), sets output high.
 	ldi tmp0,0
@@ -172,8 +177,11 @@ SwUartInt20:
 SwUartInt22:
 	pop tmp0+1
 	pop tmp0
-	reti	;30w.
+	out __SREG__,tmp0
+	pop tmp0
+	ret	;30w.
 
+#if 0
 ;    0b 0a 09 08 07 06 05 04 03 02 01 00
 ; ---___xxxyyyxxxyyyxxxyyyxxxyyy---[Stop]
 ;Oops, stop bits are always HIGH!
@@ -189,12 +197,12 @@ _SwUartPutCh01:
 	in tmp0,TCCR0B
 	tst tmp0
 	brne _SwUartPutCh01	;wait for clock stop.
-	sts gSwUartCh,gTos	;set the new char.
+	sts gSysVars_swUartCh,gTos	;set the new char.
 	ldi gTos,11
-	sts gSwUartState,gTos
+	sts gSysVars_swUartState,gTos
 	ldi tmp0,kSwUartCtcPeriodEven	;odd, but only need an even period to start?
-	out OCR0A,tmp0
-	ldi tmp0,0x82	;start bit.
+	out OCR0B,tmp0
+	ldi tmp0,KSwUartClearOp	;start bit (is 0).
 	out TCCR0A,tmp0	;Sets OC0A pin as output at the same time.
 	ldi tmp0,0
 	out TCNT0,tmp0	;reset the counter.
@@ -230,6 +238,11 @@ SwUartInit:
 	pop tmp0
 	ret
 
+#endif
+
+; ***********
+; micByte. Output a byte 
+; ***********
 	.data
 	
 #ifdef 	__DOBLINKTEST__
@@ -240,12 +253,14 @@ gLedInfo:
 	.byte	100
 #endif
 
-gSwUartState:
+#if 0
+gSysVars_swUartState:
 	.byte 0
 ;gSwUartSlowCount:
 ;	.byte 0
-gSwUartCh:
+gSysVars_swUartCh:
 	.byte 0
+#endif
 
 ;Indirect 'C' Call, ret+1:ret = true execution address.
 ;According to the instruction set manual,
@@ -269,6 +284,9 @@ gIndCCallVec:
 	.word 0
 
 #endif
+
+#if 0
+
 .text
 .global	IndCCall
 	.type	IndCCall, @function
@@ -340,3 +358,4 @@ IndCCall:
 	pop r28
 	ret
 
+#endif

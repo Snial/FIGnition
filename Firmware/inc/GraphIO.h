@@ -78,7 +78,7 @@ extern void Dot(ushort x);
 
 #endif
 
-extern void Cls(void);
+//extern void Cls(void);
 
 /**
  * The graphics system has a global pen.
@@ -131,7 +131,7 @@ extern void Cls(void);
 
 #define kMaxHiResX 159
 #define kMaxHiResY 159
-#define kVideoHiResBase 0x9380
+#define kVideoHiResBase 0xF380
 
 extern void Plot(byte x, byte y);
 

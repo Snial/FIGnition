@@ -47,12 +47,12 @@
 
 /**
  * A single PAL frame is 312 lines ( int(625/2)).
- * 16/2 = 8 lines are used for VSync, leaving 304 for the full frame.
+ * 15/2 = 7.5 lines are used for VSync, leaving 304.5 for the full frame.
  * 192 scans are used for the image leaving 304-192 = 56 for top and bottom
  * margin.
  **/
 
-#define kFrameSyncPreEqual ((kHSyncScanShort+1)*6)
+#define kFrameSyncPreEqual ((kHSyncScanShort+1)*5)
 #define kFrameSyncEqual ((kHSyncScanShort+1)*5)
 #define kFrameSyncPostEqual ((kHSyncScanShort+1)*5)
 #define kFrameFieldScans 304
@@ -188,6 +188,9 @@ typedef enum {
 	kFrameSyncScanLine,
 	kFrameSyncScanGen,
 	kFrameSyncBotMargin,
+	kFrameSyncTape,
+	kFrameSyncTape1,
+	kFrameSyncTape2,
 	kFrameSyncStatesCount
 } tFrameSyncStates;
 
@@ -239,7 +242,7 @@ extern void VideoTestInit(byte ch,int offset);
 
 
 // UDGs repeat
-extern void VideoCopyUDGs(void);
+//extern void VideoCopyUDGs(void);
 
 //#define _HWTEST_COMPOSITEOUTPUT
 

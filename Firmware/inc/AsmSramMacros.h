@@ -38,12 +38,35 @@
 	out SPDR,\dst	;start off a new read.
 .endm
 
-.macro VMSeqWriteSpi dst tmp
+.macro SeqReadRamUnCached dst
+	VMSeqWaitRam \dst
+	in \dst,SPDR
+	out SPDR,\dst	;start off a new read.
+.endm
+
+;Note we only call this if we KNOW there is more than 18 cycles between
+;reads.
+.macro SeqReadRamUnCachedQuick dst
+	in \dst,SPSR
+	in \dst,SPDR
+	out SPDR,\dst	;start off a new read.
+.endm
+
+;Note, we must only call this routine if
+;We know there are more than 18c between reads.
+.macro SeqReadRamFast dst
+	in \dst,SPSR
+	in \dst,SPDR
+	out SPDR,\dst	;start off a new read.
+.endm
+
+
+.macro VMSeqWriteSpi src tmp
 2:
 	in \tmp,SPSR
 	sbrs \tmp,SPIF
 	rjmp 2b	;it was clear, so retry.
-	out SPDR,\dst
+	out SPDR,\src
 
 .endm
 
